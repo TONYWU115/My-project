@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Web Serial Plotter</title>
+    <!-- <link rel="website icon" href="./image/web icon.png"> -->
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #plot {
+            width: 100%;
+            height: 500px;
+        }
+        button {
+            margin-right: 10px;
+        }
+        #dataDisplay {
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: monospace;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Serial Plotter</h1>
+    <label for="baudRate">Baud Rate:</label>
+    <select id="baudRate">
+        <option value="9600">9600</option>
+        <option value="19200">19200</option>
+        <option value="38400">38400</option>
+        <option value="57600">57600</option>
+        <option value="115200" selected>115200</option>
+    </select>
+    <button id="connect">Connect</button>
+    <button id="stop" disabled>Stop</button>
+    <button id="reset">Reset</button>
+    <div id="plot"></div>
+    <h2>Received Data</h2>
+    <div id="dataDisplay"></div>
+
+    <script>
+        let port;
+        let reader;
+        let textDecoder = new TextDecoderStream();
+        let timeData = [];
+        let dataBuffer = [];
+        let startTime;
+        // 用來儲存尚未處理的不完整資料片段
+        let incomingBuffer = "";
+        const updateInterval = 100; // 更新間隔 100 毫秒
+        const maxDataPoints = 500;
+        let plotNeedsUpdate = false;
+        let updateIntervalId = null;
+        const maxDataListItems = 100;
+        const dataDisplay = document.getElementById("dataDisplay");
+
+        async function connectSerial() {
+            if ("serial" in navigator) {
+                try {
+                    port = await navigator.serial.requestPort();
+                    let baudRate = parseInt(document.getElementById("baudRate").value);
+                    await port.open({ baudRate: baudRate });
+
+                    const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+                    const readerStream = textDecoder.readable.getReader();
+                    reader = readerStream;
+
+                    startTime = new Date();
+                    readLoop();
+                    updateIntervalId = setInterval(updatePlot, updateInterval);
+
+                    document.getElementById("connect").disabled = true;
+                    document.getElementById("stop").disabled = false;
+                } catch (error) {
+                    console.error("Error opening serial port:", error);
+                }
+            } else {
+                alert("Web Serial API not supported in this browser.");
+            }
+        }
+
+        async function readLoop() {
+            // 每筆資料格式: "value\n"
+            while (port.readable) {
+                try {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        reader.releaseLock();
+                        break;
+                    }
+                    if (value) {
+                        // 將新資料加至暫存區
+                        incomingBuffer += value;
+                        // 根據換行符切割資料，同時保留不完整資料片段
+                        let lines = incomingBuffer.split("\n");
+                        incomingBuffer = lines.pop();
+                        lines.forEach(line => {
+                            let trimmed = line.trim();
+                            if (trimmed) {
+                                let num = parseFloat(trimmed);
+                                // 只處理有效數值，不做上限限制
+                                if (!isNaN(num)) {
+                                    // 保留一位小數
+                                    let numOneDecimal = parseFloat(num.toFixed(1));
+                                    let currentTime = new Date();
+                                    let elapsed = (currentTime - startTime) / 1000;
+                                    timeData.push(elapsed);
+                                    dataBuffer.push(numOneDecimal);
+                                    if (timeData.length > maxDataPoints) {
+                                        timeData.shift();
+                                        dataBuffer.shift();
+                                    }
+                                    plotNeedsUpdate = true;
+                                    appendData(`${elapsed.toFixed(2)}s: ${numOneDecimal.toFixed(1)}`);
+                                }
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error reading from serial port:", error);
+                    break;
+                }
+            }
+        }
+
+        function updatePlot() {
+            if (plotNeedsUpdate) {
+                Plotly.update("plot", {
+                    x: [timeData],
+                    y: [dataBuffer]
+                }, {}, [0]);
+                plotNeedsUpdate = false;
+            }
+        }
+
+        async function stopSerial() {
+            try {
+                if (updateIntervalId) {
+                    clearInterval(updateIntervalId);
+                    updateIntervalId = null;
+                }
+                if (reader) {
+                    await reader.cancel();
+                    reader.releaseLock();
+                }
+                if (port) {
+                    await port.close();
+                }
+            } catch (error) {
+                console.error("Error closing serial port:", error);
+            } finally {
+                document.getElementById("connect").disabled = false;
+                document.getElementById("stop").disabled = true;
+            }
+        }
+
+        function resetPage() {
+            location.reload();
+        }
+
+        function appendData(text) {
+            const p = document.createElement("p");
+            p.textContent = text;
+            dataDisplay.appendChild(p);
+            dataDisplay.scrollTop = dataDisplay.scrollHeight;
+            while (dataDisplay.childNodes.length > maxDataListItems) {
+                dataDisplay.removeChild(dataDisplay.firstChild);
+            }
+        }
+
+        // 初始化圖表，移除固定的 y 軸範圍設定，讓圖表隨數據動態調整
+        Plotly.newPlot("plot", [{
+            x: [],
+            y: [],
+            mode: "lines",
+            line: { color: "#80CAF6" }
+        }], {
+            title: "Real-time Data Plot"
+        });
+
+        document.getElementById("connect").addEventListener("click", connectSerial);
+        document.getElementById("stop").addEventListener("click", stopSerial);
+        document.getElementById("reset").addEventListener("click", resetPage);
+    </script>
+</body>
+</html>
