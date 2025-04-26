@@ -4,28 +4,41 @@
     <meta charset="UTF-8">
     <title>Web Serial Plotter</title>
     <link rel="website icon" href="./image/web icon.png">
-
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background-color: #121212;
+            color: #EEEEEE;
         }
         #plot {
             width: 100%;
             height: 500px;
+            background-color: #1E1E1E;
+            border: 1px solid #333;
         }
         button {
             margin-right: 10px;
+            background-color: #333;
+            border: none;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #444;
         }
         #dataDisplay {
             margin-top: 20px;
             height: 200px;
             overflow-y: auto;
-            border: 1px solid #ccc;
+            border: 1px solid #333;
             padding: 10px;
             font-family: monospace;
-            background-color: #f9f9f9;
+            background-color: #1E1E1E;
+            color: #EEEEEE;
         }
         /* Style for welcome page */
         #welcomePage {
@@ -39,6 +52,7 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            background-color: rgba(18, 18, 18, 0.95);
         }
     </style>
 </head>
@@ -79,7 +93,12 @@
                 mode: "lines",
                 line: { color: "#80CAF6" }
             }], {
-                title: "Real-time Data Plot"
+                title: "Real-time Data Plot",
+                paper_bgcolor: "#121212",
+                plot_bgcolor: "#1E1E1E",
+                font: { color: "#EEEEEE" },
+                xaxis: { gridcolor: "#333" },
+                yaxis: { gridcolor: "#333" }
             });
         }
 
