@@ -71,9 +71,9 @@
             <option value="57600">57600</option>
             <option value="115200" selected>115200</option>
         </select>
-        <button id="connect">Connect</button>
-        <button id="stop" disabled>Stop</button>
-        <button id="reset">Reset</button>
+        <button id="connect" style="width: 120px;">Connect</button>
+        <button id="stop" style="width: 120px;" disabled>Stop</button>
+        <button id="reset" style="width: 120px;">Reset</button>
         <div id="plot"></div>
         <h2>Received Data</h2>
         <div id="dataDisplay"></div>
@@ -116,6 +116,7 @@
         let updateIntervalId = null;
         const maxDataListItems = 100;
         const dataDisplay = document.getElementById("dataDisplay");
+        let isPaused = false; // Flag for pause/resume state
 
         async function connectSerial() {
             if ("serial" in navigator) {
@@ -152,6 +153,10 @@
                         break;
                     }
                     if (value) {
+                        // 若處於暫停狀態，略過處理新的資料
+                        if (isPaused) {
+                            continue;
+                        }
                         // 將新資料加至暫存區
                         incomingBuffer += value;
                         // 根據換行符切割資料，同時保留不完整資料片段
@@ -161,7 +166,7 @@
                             let trimmed = line.trim();
                             if (trimmed) {
                                 let num = parseFloat(trimmed);
-                                // 只處理有效數值，不做上限限制
+                                // 只處理有效數值
                                 if (!isNaN(num)) {
                                     // 保留一位小數
                                     let numOneDecimal = parseFloat(num.toFixed(1));
@@ -196,24 +201,20 @@
             }
         }
 
-        async function stopSerial() {
-            try {
+        async function toggleSerial() {
+            if (!isPaused) {
+                // Pause reading/updating
+                isPaused = true;
                 if (updateIntervalId) {
                     clearInterval(updateIntervalId);
                     updateIntervalId = null;
                 }
-                if (reader) {
-                    await reader.cancel();
-                    reader.releaseLock();
-                }
-                if (port) {
-                    await port.close();
-                }
-            } catch (error) {
-                console.error("Error closing serial port:", error);
-            } finally {
-                document.getElementById("connect").disabled = false;
-                document.getElementById("stop").disabled = true;
+                document.getElementById("stop").textContent = "Continue";
+            } else {
+                // Resume reading/updating
+                isPaused = false;
+                updateIntervalId = setInterval(updatePlot, updateInterval);
+                document.getElementById("stop").textContent = "Stop";
             }
         }
 
@@ -232,7 +233,8 @@
         }
 
         document.getElementById("connect").addEventListener("click", connectSerial);
-        document.getElementById("stop").addEventListener("click", stopSerial);
+        // Replace stopSerial with toggleSerial for pause/resume behavior.
+        document.getElementById("stop").addEventListener("click", toggleSerial);
         document.getElementById("reset").addEventListener("click", resetPage);
     </script>
 </body>
