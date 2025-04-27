@@ -6,6 +6,7 @@
 
     <link rel="website icon" href="./image/web icon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="loading style.css">
     
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
@@ -54,13 +55,14 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            /* z-index: 2; */
             background-color: rgba(18, 18, 18, 0.95);
         }
         #github {
             margin-left: 8px;
         }
         .start-container {
+            z-index: 2;
             display: flex;
             align-items: center;
         }
@@ -76,6 +78,12 @@
                     <i class="fab fa-github fa-2x"></i>
                 </a>
             </div>
+        </div>
+        <div class="loading">
+            <svg height="48px" width="64px">
+                <polyline id="back" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
+                <polyline id="front" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
+            </svg>
         </div>
     </div>
     
