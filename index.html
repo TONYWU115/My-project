@@ -102,6 +102,10 @@
         <button id="reset" style="width: 120px;">Reset</button>
         <div id="plot"></div>
         <h2>Received Data</h2>
+        <div style="margin-bottom: 10px;">
+            <span id="minValue">Min: --</span>
+            <span id="maxValue" style="margin-left: 20px;">Max: --</span>
+        </div>
         <div id="dataDisplay"></div>
     </div>
     <script>
@@ -143,6 +147,10 @@
         const maxDataListItems = 100;
         const dataDisplay = document.getElementById("dataDisplay");
         let isPaused = false; // Flag for pause/resume state
+
+        // 新增全域變數以儲存最小值與最大值
+        let currentMin = Infinity;
+        let currentMax = -Infinity;
 
         async function connectSerial() {
             if ("serial" in navigator) {
@@ -205,6 +213,17 @@
                                         dataBuffer.shift();
                                     }
                                     plotNeedsUpdate = true;
+                                    
+                                    // 更新最小值與最大值
+                                    if (numOneDecimal < currentMin) {
+                                        currentMin = numOneDecimal;
+                                    }
+                                    if (numOneDecimal > currentMax) {
+                                        currentMax = numOneDecimal;
+                                    }
+                                    document.getElementById("minValue").textContent = "Min: " + currentMin.toFixed(1);
+                                    document.getElementById("maxValue").textContent = "Max: " + currentMax.toFixed(1);
+
                                     appendData(`${elapsed.toFixed(2)}s: ${numOneDecimal.toFixed(1)}`);
                                 }
                             }
