@@ -18,8 +18,8 @@
     sprintf((char*)uart_buffer, "%.f\r\n", value);
     ```
 
----
-#### 流程圖如下
+#
+### 流程圖如下
 ```mermaid
 flowchart LR
     A(單晶片發送數據) -->B(serial port接收)
@@ -27,7 +27,10 @@ flowchart LR
     C --> D(plotly.js)
     D --> E(Data plot)
 ```
+---
+<img src="https://raw.githubusercontent.com/TONYWU115/My-project/refs/heads/main/image/demo.png">
 
+---
 ```
                        _ooOoo
                       o8888888o
