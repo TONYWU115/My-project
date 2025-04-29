@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Serial Plotter</title>
+    <title>Web Plotter</title>
 
     <link rel="website icon" href="./image/web icon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="loading style.css">
     
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -18,7 +17,7 @@
             background-color: #121212;
             color: #EEEEEE;
         }
-        #plot {
+        #plot, #blePlot {
             width: 100%;
             height: 500px;
             background-color: #1E1E1E;
@@ -36,7 +35,8 @@
         button:hover {
             background-color: #444;
         }
-        #dataDisplay {
+        #dataDisplay,
+        #bleDataDisplay {
             margin-top: 20px;
             height: 200px;
             overflow-y: auto;
@@ -59,24 +59,32 @@
             /* z-index: 2; */
             background-color: rgba(18, 18, 18, 0.95);
         }
-        #github {
-            margin-left: 8px;
-        }
         .start-container {
             z-index: 2;
             display: flex;
             align-items: center;
         }
+        #github {
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
     <div id="welcomePage">
-        <h1>Welcome to the Web Serial Plotter</h1>
+        <h1>Welcome to the Web Data Plotter</h1>
         <div class="start-container">
-            <button id="startButton">Start</button>
+
+            <button id="serialButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <img src="./image/usb icon.png" style="width: 15px; margin-top: -3px;">Serial
+            </button>
+
+            <button id="bleButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <img src="./image/bluetooth icon.png" style="width: 8px; margin-top: -2px;">BLE
+            </button>
+
             <div id="github">
-                <a href="https://github.com/TONYWU115/My-project" target="_blank" style="color: white; text-decoration: none;">
-                    <i class="fab fa-github fa-2x"></i>
+                <a href="https://github.com/TONYWU115/My-project">
+                    <img src="./image/github icon.png" style="width: 33px;">
                 </a>
             </div>
         </div>
@@ -86,9 +94,15 @@
                 <polyline id="front" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
             </svg>
         </div>
+        <!-- 
+        <footer style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; color: #EEEEEE; padding: 10px; opacity: 0.9;">
+            <p>something</p>
+        </footer> 
+        -->
     </div>
-    
-    <div id="mainContent" style="display: none;">
+
+    <!-- Serial Plotter Content -->
+    <div id="serialContent" style="display: none;">
         <h1>Web Serial Plotter</h1>
         <label for="baudRate">Baud Rate:</label>
         <select id="baudRate">
@@ -109,14 +123,36 @@
         </div>
         <div id="dataDisplay"></div>
     </div>
+
+    <!-- BLE Plotter Content -->
+    <div id="bleContent" style="display: none;">
+        <h2>BLE Data Plotter</h2>
+        <button id="connectBLE" style="width: 110px;">Connect</button>
+        <button id="bleStop" style="width: 110px;">Stop</button>
+        <button id="bleReset" style="width: 110px;">Reset</button>
+        <p id="status">Not connected</p>
+        <div id="blePlot"></div>
+        <h2>Received Data</h2>
+        <div style="margin-bottom: 10px;">
+            <span id="bleMinValue">Min: --</span>
+            <span id="bleMaxValue" style="margin-left: 20px;">Max: --</span>
+        </div>
+        <div id="bleDataDisplay"></div>
+    </div>
+
     <script>
-        // Handle welcome page transition and initialize Plotly only after mainContent is visible
-        document.getElementById("startButton").addEventListener("click", function() {
+        document.getElementById("serialButton").addEventListener("click", function() {
             document.getElementById("welcomePage").style.display = "none";
-            document.getElementById("mainContent").style.display = "block";
-            initializePlot();
+            document.getElementById("serialContent").style.display = "block";
+            initializePlot(); // Initialize Serial Plotly plot
+        });
+        document.getElementById("bleButton").addEventListener("click", function() {
+            document.getElementById("welcomePage").style.display = "none";
+            document.getElementById("bleContent").style.display = "block";
+            initializeBLEPlot(); // Initialize BLE Plotly plot
         });
 
+        /* ---------------- Serial Plotter Code ---------------- */
         function initializePlot() {
             Plotly.newPlot("plot", [{
                 x: [],
@@ -128,8 +164,8 @@
                 paper_bgcolor: "#121212",
                 plot_bgcolor: "#1E1E1E",
                 font: { color: "#EEEEEE" },
-                xaxis: { title: "time(s)",gridcolor: "#333" },
-                yaxis: { title: "value",gridcolor: "#333" }
+                xaxis: { title: "time(s)", gridcolor: "#333" },
+                yaxis: { title: "value", gridcolor: "#333" }
             });
         }
 
@@ -139,17 +175,16 @@
         let timeData = [];
         let dataBuffer = [];
         let startTime;
-        // 用來儲存尚未處理的不完整資料片段
         let incomingBuffer = "";
-        const updateInterval = 100; // 更新間隔 100 毫秒
+        const updateInterval = 100; // 100ms update interval
         const maxDataPoints = 500;
         let plotNeedsUpdate = false;
         let updateIntervalId = null;
         const maxDataListItems = 100;
         const dataDisplay = document.getElementById("dataDisplay");
-        let isPaused = false; // Flag for pause/resume state
+        let isPaused = false; // pause/resume state
 
-        // 新增全域變數以儲存最小值與最大值
+        // Global min and max values
         let currentMin = Infinity;
         let currentMax = -Infinity;
 
@@ -179,7 +214,6 @@
         }
 
         async function readLoop() {
-            // 每筆資料格式: "value\n"
             while (port.readable) {
                 try {
                     const { value, done } = await reader.read();
@@ -188,22 +222,15 @@
                         break;
                     }
                     if (value) {
-                        // 若處於暫停狀態，略過處理新的資料
-                        if (isPaused) {
-                            continue;
-                        }
-                        // 將新資料加至暫存區
+                        if (isPaused) continue;
                         incomingBuffer += value;
-                        // 根據換行符切割資料，同時保留不完整資料片段
                         let lines = incomingBuffer.split("\n");
                         incomingBuffer = lines.pop();
                         lines.forEach(line => {
                             let trimmed = line.trim();
                             if (trimmed) {
                                 let num = parseFloat(trimmed);
-                                // 只處理有效數值
                                 if (!isNaN(num)) {
-                                    // 保留一位小數
                                     let numOneDecimal = parseFloat(num.toFixed(1));
                                     let currentTime = new Date();
                                     let elapsed = (currentTime - startTime) / 1000;
@@ -215,7 +242,6 @@
                                     }
                                     plotNeedsUpdate = true;
                                     
-                                    // 更新最小值與最大值
                                     if (numOneDecimal < currentMin) {
                                         currentMin = numOneDecimal;
                                     }
@@ -249,7 +275,6 @@
 
         async function toggleSerial() {
             if (!isPaused) {
-                // Pause reading/updating
                 isPaused = true;
                 if (updateIntervalId) {
                     clearInterval(updateIntervalId);
@@ -257,7 +282,6 @@
                 }
                 document.getElementById("stop").textContent = "Continue";
             } else {
-                // Resume reading/updating
                 isPaused = false;
                 updateIntervalId = setInterval(updatePlot, updateInterval);
                 document.getElementById("stop").textContent = "Stop";
@@ -279,9 +303,121 @@
         }
 
         document.getElementById("connect").addEventListener("click", connectSerial);
-        // Replace stopSerial with toggleSerial for pause/resume behavior.
         document.getElementById("stop").addEventListener("click", toggleSerial);
         document.getElementById("reset").addEventListener("click", resetPage);
+
+        /* ---------------- BLE Plotter Code ---------------- */
+        function initializeBLEPlot() {
+            Plotly.newPlot("blePlot", [{
+                x: [],
+                y: [],
+                mode: "lines",
+                line: { color: "#80CAF6" }
+            }], {
+                title: "Real-time Data Plot",
+                paper_bgcolor: "#121212",
+                plot_bgcolor: "#1E1E1E",
+                font: { color: "#EEEEEE" },
+                xaxis: {
+                    title: "time(s)",
+                    gridcolor: "#333",
+                    fixedrange: true
+                },
+                yaxis: {
+                    title: "value",
+                    gridcolor: "#333"
+                }
+            });
+        }
+
+        let bluetoothDevice;
+        let adcCharacteristic;
+        let blePaused = false;
+        let bleIncomingBuffer = "";
+        let bleCurrentMin = Infinity;
+        let bleCurrentMax = -Infinity;
+        let bleStartTime;
+        const bleDataDisplay = document.getElementById("bleDataDisplay");
+
+        async function connectBLE() {
+            try {
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['0000ffe0-0000-1000-8000-00805f9b34fb']
+                });
+
+                document.getElementById("status").textContent = "Connecting...";
+                
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+                adcCharacteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+
+                document.getElementById("status").textContent = "Connected";
+                
+                // 設定 BLE 起始時間
+                bleStartTime = new Date();
+
+                adcCharacteristic.addEventListener('characteristicvaluechanged', handleADCData);
+                await adcCharacteristic.startNotifications();
+
+            } catch (error) {
+                console.error('Connection failed:', error);
+                document.getElementById("status").textContent = "Connection failed";
+            }
+        }
+
+        function handleADCData(event) {
+            if (blePaused) return;
+            let rawValue = new TextDecoder().decode(event.target.value);
+            bleIncomingBuffer += rawValue;
+            let lines = bleIncomingBuffer.split("\n");
+            bleIncomingBuffer = lines.pop();
+            lines.forEach(line => {
+                let trimmed = line.trim();
+                if (trimmed) {
+                    let num = parseFloat(trimmed);
+                    if (!isNaN(num)) {
+                        if (num < bleCurrentMin) {
+                            bleCurrentMin = num;
+                        }
+                        if (num > bleCurrentMax) {
+                            bleCurrentMax = num;
+                        }
+                        document.getElementById("bleMinValue").textContent = "Min: " + bleCurrentMin.toFixed(1);
+                        document.getElementById("bleMaxValue").textContent = "Max: " + bleCurrentMax.toFixed(1);
+
+                        // 使用數值型式的 elapsed 便於圖表更新
+                        let currentTime = new Date();
+                        let elapsedNum = (currentTime - bleStartTime) / 1000;
+                        const p = document.createElement("p");
+                        p.textContent = `${elapsedNum.toFixed(2)}s: ${num.toFixed(1)}`;
+                        bleDataDisplay.appendChild(p);
+                        bleDataDisplay.scrollTop = bleDataDisplay.scrollHeight;
+                        while (bleDataDisplay.childNodes.length > maxDataListItems) {
+                            bleDataDisplay.removeChild(bleDataDisplay.firstChild);
+                        }
+                        
+                        // 擴充 BLE Plot，x 軸以數值型式傳入
+                        Plotly.extendTraces("blePlot", {
+                            x: [[elapsedNum]],
+                            y: [[num]]
+                        }, [0], maxDataPoints);
+                    }
+                }
+            });
+        }
+
+        function toggleBLEPause() {
+            blePaused = !blePaused;
+            const btn = document.getElementById("bleStop");
+            btn.textContent = blePaused ? "Continue" : "Stop";
+        }
+
+        document.getElementById("connectBLE").addEventListener("click", connectBLE);
+        document.getElementById("bleStop").addEventListener("click", toggleBLEPause);
+        document.getElementById("bleReset").addEventListener("click", function() {
+            location.reload();
+        });
     </script>
 </body>
 </html>
