@@ -31,6 +31,7 @@
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
+            font-weight: bold;
         }
         button:hover {
             background-color: #444;
@@ -72,8 +73,8 @@
 <body>
     <div id="welcomePage">
         <h1>Welcome to the Web Data Plotter</h1>
-        <div class="start-container">
 
+        <div class="start-container">
             <button id="serialButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px;">
                 <img src="./image/usb icon.png" style="width: 15px; margin-top: -3px;">Serial
             </button>
@@ -84,21 +85,20 @@
 
             <div id="github">
                 <a href="https://github.com/TONYWU115/My-project">
-                    <img src="./image/github icon.png" style="width: 33px;">
-                </a>
+                    <img src="./image/github icon.png" style="width: 33px;"></a>
             </div>
         </div>
+
         <div class="loading">
             <svg height="48px" width="64px">
                 <polyline id="back" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
                 <polyline id="front" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
             </svg>
         </div>
-        <!-- 
-        <footer style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; color: #EEEEEE; padding: 10px; opacity: 0.9;">
-            <p>something</p>
+        
+        <footer style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; color: #EEEEEE; padding: 10px; opacity: 0.5;">
+            <p>" something cool "</p>
         </footer> 
-        -->
     </div>
 
     <!-- Serial Plotter Content -->
@@ -112,9 +112,10 @@
             <option value="57600">57600</option>
             <option value="115200" selected>115200</option>
         </select>
-        <button id="connect" style="width: 120px;">Connect</button>
-        <button id="stop" style="width: 120px;" disabled>Stop</button>
-        <button id="reset" style="width: 120px;">Reset</button>
+        <button id="connect" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
+        <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
+        <button id="reset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
+        <br><br>
         <div id="plot"></div>
         <h2>Received Data</h2>
         <div style="margin-bottom: 10px;">
@@ -127,9 +128,9 @@
     <!-- BLE Plotter Content -->
     <div id="bleContent" style="display: none;">
         <h2>BLE Data Plotter</h2>
-        <button id="connectBLE" style="width: 110px;">Connect</button>
-        <button id="bleStop" style="width: 110px;">Stop</button>
-        <button id="bleReset" style="width: 110px;">Reset</button>
+        <button id="connectBLE" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
+        <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
+        <button id="bleReset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
         <p id="status">Not connected</p>
         <div id="blePlot"></div>
         <h2>Received Data</h2>
