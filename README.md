@@ -1,7 +1,7 @@
 ## 網頁程式設計期末專題
 ---
-### [Web serial plotter](https://tonywu115.github.io/web-design-project/)
-使用 web serial api 讓網頁可以讀取單晶片發送的數據
+### [Web Data Plotter](https://tonywu115.github.io/web-design-project/)
+
 * 單晶片數據傳送方式
     * serial
     * BLE4.0 (BT-05)
@@ -13,7 +13,7 @@
 * 顯示數據最大最小值
 
 ### 注意事項
-- 需使用支援 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) 的瀏覽器
+- 若使用`serial plotter`，則需使用支援 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) 的瀏覽器
     - Chrome
     - Edge
 <!-- - 單晶片 Buad Rate 要設定成`9600`,`19200`,`38400`,`57600`,`115200`其中一個 -->
