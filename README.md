@@ -1,10 +1,14 @@
 ## 網頁程式設計期末專題
 ---
-### [Web serial plotter](https://tonywu115.github.io/My-project/)
+### [Web serial plotter](https://tonywu115.github.io/web-design-project/)
 使用 web serial api 讓網頁可以讀取單晶片發送的數據
+* 單晶片數據傳送方式
+    * serial
+    * BLE4.0 (BT-05)
+
 ### 功能
 * 讀取數據
-* 即時顯示
+* 即時顯示數據
 * 繪製成波型
 * 顯示數據最大最小值
 
@@ -28,6 +32,8 @@ flowchart LR
     D --> E(Data plot)
 ```
 ---
+### Demo
+* serial plotter
 <img src="https://raw.githubusercontent.com/TONYWU115/My-project/refs/heads/main/image/demo.png">
 
 ---
