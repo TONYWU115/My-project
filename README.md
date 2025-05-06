@@ -3,7 +3,7 @@
 ### [Web Data Plotter](https://tonywu115.github.io/web-design-project/)
 
 * 單晶片數據傳送方式
-    * serial
+    * Serial
     * BLE4.0 (BT-05)
 
 ### 功能
@@ -27,9 +27,14 @@
 ```mermaid
 flowchart LR
     A(單晶片發送數據) -->B(serial port接收)
-    B --> C(web serial api)
+    B --> C(Web serial API)
     C --> D(plotly.js)
     D --> E(Data plot)
+
+    A --> F(BLE 接收)
+    F --> G(Web Bluetooth API)
+    G --> D
+
 ```
 ---
 ### Demo
