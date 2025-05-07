@@ -68,6 +68,24 @@
         #github {
             margin-left: 8px;
         }
+        .data-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .export-btn {
+            padding: 6px 16px;
+            font-size: 14px;
+            background-color: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .export-btn:hover {
+            background-color: #1565c0;
+        }
     </style>
 </head>
 <body>
@@ -117,7 +135,12 @@
         <button id="reset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
         <br><br>
         <div id="plot"></div>
-        <h2>Received Data</h2>
+        <br><br>
+        <div class="data-header">
+            <h2 style="margin: 0;">Received Data</h2>
+            <button id="exportCsv" class="export-btn">Export CSV</button>
+        </div>
+        <br>
         <div style="margin-bottom: 10px;">
             <span id="minValue">Min: --</span>
             <span id="maxValue" style="margin-left: 20px;">Max: --</span>
@@ -133,7 +156,12 @@
         <button id="bleReset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
         <p id="status">Not connected</p>
         <div id="blePlot"></div>
-        <h2>Received Data</h2>
+        <br><br>
+        <div class="data-header">
+            <h2 style="margin: 0;">Received Data</h2>
+            <button id="exportBleCsv" class="export-btn">Export CSV</button>
+        </div>
+        <br>
         <div style="margin-bottom: 10px;">
             <span id="bleMinValue">Min: --</span>
             <span id="bleMaxValue" style="margin-left: 20px;">Max: --</span>
@@ -307,6 +335,24 @@
         document.getElementById("stop").addEventListener("click", toggleSerial);
         document.getElementById("reset").addEventListener("click", resetPage);
 
+        // 匯出 Serial CSV
+        document.getElementById("exportCsv").addEventListener("click", function() {
+            let rows = [];
+            rows.push(["Time", "Value"]);
+            dataDisplay.querySelectorAll("p").forEach(p => {
+                let match = p.textContent.match(/^([\d.]+)s: ([\d.-]+)$/);
+                if (match) {
+                    rows.push([match[1], match[2]]);
+                }
+            });
+            let csvContent = rows.map(e => e.join(",")).join("\r\n");
+            let blob = new Blob([csvContent], { type: "text/csv" });
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "serial_data.csv";
+            a.click();
+        });
+
         /* ---------------- BLE Plotter Code ---------------- */
         function initializeBLEPlot() {
             Plotly.newPlot("blePlot", [{
@@ -418,6 +464,24 @@
         document.getElementById("bleStop").addEventListener("click", toggleBLEPause);
         document.getElementById("bleReset").addEventListener("click", function() {
             location.reload();
+        });
+
+        // 匯出 BLE CSV
+        document.getElementById("exportBleCsv").addEventListener("click", function() {
+            let rows = [];
+            rows.push(["Time", "Value"]);
+            bleDataDisplay.querySelectorAll("p").forEach(p => {
+                let match = p.textContent.match(/^([\d.]+)s: ([\d.-]+)$/);
+                if (match) {
+                    rows.push([match[1], match[2]]);
+                }
+            });
+            let csvContent = rows.map(e => e.join(",")).join("\r\n");
+            let blob = new Blob([csvContent], { type: "text/csv" });
+            let a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "ble_data.csv";
+            a.click();
         });
     </script>
 </body>
