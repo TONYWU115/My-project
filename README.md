@@ -10,7 +10,9 @@
 * 讀取數據
 * 即時顯示數據
 * 繪製成波型
-* 顯示數據最大最小值
+* 顯示數據最大最小值、平均值
+* 設定警示值
+* 將數據輸出成CSV檔
 
 ### 注意事項
 - 若使用`serial plotter`，則需使用支援 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) 的瀏覽器
@@ -38,9 +40,11 @@ flowchart LR
 ```
 ---
 ### Demo
-* serial plotter
-<img src="https://raw.githubusercontent.com/TONYWU115/My-project/refs/heads/main/image/demo.png">
+* serial data plotter
+<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/image/serial.png">
 
+* BLE data plotter
+<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/image/BLE.png">
 ---
 ```
                        _ooOoo
