@@ -7,7 +7,7 @@
 
     <link rel="website icon" href="./image/web icon.png">
     <link rel="stylesheet" href="loading style.css">
-    
+
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
     <style>
@@ -57,7 +57,6 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            /* z-index: 2; */
             background-color: rgba(18, 18, 18, 0.95);
         }
         .start-container {
@@ -96,7 +95,7 @@
             <button id="serialButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px;">
                 <img src="./image/usb icon.png" style="width: 15px; margin-top: -3px;">Serial
             </button>
-
+            
             <button id="bleButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <img src="./image/bluetooth icon.png" style="width: 8px; margin-top: -2px;">BLE
             </button>
@@ -113,7 +112,7 @@
                 <polyline id="front" points="0.157 23.954, 14 23.954, 21.843 48, 43 0, 50 24, 64 24"></polyline>
             </svg>
         </div>
-        
+
         <footer style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); text-align: center; color: #EEEEEE; padding: 10px; opacity: 0.5;">
             <p>" something cool "</p>
         </footer> 
@@ -133,6 +132,12 @@
         <button id="connect" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
         <button id="reset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
+
+        <!-- Threshold controls -->
+        <label for="thresholdInput" style="margin-left:20px;">Threshold:</label>
+        <input type="number" id="thresholdInput" value="0" style="width:80px;">
+        <button id="setThresholdBtn" class="export-btn" style="margin-left:5px;">Set</button>
+        <button id="toggleThresholdBtn" class="export-btn" style="margin-left:5px; width: 120px;">Enable Alert</button>
         <br><br>
         <div id="plot"></div>
         <br><br>
@@ -144,6 +149,7 @@
         <div style="margin-bottom: 10px;">
             <span id="minValue">Min: --</span>
             <span id="maxValue" style="margin-left: 20px;">Max: --</span>
+            <span id="avgValue" style="margin-left: 20px;">Avg: --</span>
         </div>
         <div id="dataDisplay"></div>
     </div>
@@ -154,9 +160,17 @@
         <button id="connectBLE" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
         <button id="bleReset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
+
+        <!-- Threshold controls -->
+        <label for="bleThresholdInput" style="margin-left:20px;">Threshold:</label>
+        <input type="number" id="bleThresholdInput" value="0" style="width:80px;">
+        <button id="setBleThresholdBtn" class="export-btn" style="margin-left:5px;">Set</button>
+        <button id="toggleBleThresholdBtn" class="export-btn" style="margin-left:5px; width: 120px;">Enable Alert</button>
         <p id="status">Not connected</p>
+
         <div id="blePlot"></div>
         <br><br>
+
         <div class="data-header">
             <h2 style="margin: 0;">Received Data</h2>
             <button id="exportBleCsv" class="export-btn">Export CSV</button>
@@ -165,6 +179,7 @@
         <div style="margin-bottom: 10px;">
             <span id="bleMinValue">Min: --</span>
             <span id="bleMaxValue" style="margin-left: 20px;">Max: --</span>
+            <span id="bleAvgValue" style="margin-left: 20px;">Avg: --</span>
         </div>
         <div id="bleDataDisplay"></div>
     </div>
@@ -173,12 +188,76 @@
         document.getElementById("serialButton").addEventListener("click", function() {
             document.getElementById("welcomePage").style.display = "none";
             document.getElementById("serialContent").style.display = "block";
-            initializePlot(); // Initialize Serial Plotly plot
+            initializePlot();
         });
         document.getElementById("bleButton").addEventListener("click", function() {
             document.getElementById("welcomePage").style.display = "none";
             document.getElementById("bleContent").style.display = "block";
-            initializeBLEPlot(); // Initialize BLE Plotly plot
+            initializeBLEPlot();
+        });
+
+        // ----------- Serial Threshold -----------
+        let threshold = parseFloat(document.getElementById("thresholdInput").value) || 0;
+        let thresholdEnabled = false;
+        let thresholdLine = {
+            type: "line",
+            xref: "paper",
+            x0: 0,
+            x1: 1,
+            y0: threshold,
+            y1: threshold,
+            line: {
+                color: "red",
+                width: 2,
+                dash: "dash"
+            }
+        };
+        function updateThresholdLine() {
+            Plotly.relayout("plot", {
+                "shapes": thresholdEnabled ? [thresholdLine] : []
+            });
+        }
+        document.getElementById("setThresholdBtn").addEventListener("click", function() {
+            threshold = parseFloat(document.getElementById("thresholdInput").value);
+            thresholdLine.y0 = thresholdLine.y1 = threshold;
+            updateThresholdLine();
+        });
+        document.getElementById("toggleThresholdBtn").addEventListener("click", function() {
+            thresholdEnabled = !thresholdEnabled;
+            this.textContent = thresholdEnabled ? "Disable Alert" : "Enable Alert";
+            updateThresholdLine();
+        });
+
+        // ----------- BLE Threshold -----------
+        let bleThreshold = parseFloat(document.getElementById("bleThresholdInput").value) || 0;
+        let bleThresholdEnabled = false;
+        let bleThresholdLine = {
+            type: "line",
+            xref: "paper",
+            x0: 0,
+            x1: 1,
+            y0: bleThreshold,
+            y1: bleThreshold,
+            line: {
+                color: "red",
+                width: 2,
+                dash: "dash"
+            }
+        };
+        function updateBleThresholdLine() {
+            Plotly.relayout("blePlot", {
+                "shapes": bleThresholdEnabled ? [bleThresholdLine] : []
+            });
+        }
+        document.getElementById("setBleThresholdBtn").addEventListener("click", function() {
+            bleThreshold = parseFloat(document.getElementById("bleThresholdInput").value);
+            bleThresholdLine.y0 = bleThresholdLine.y1 = bleThreshold;
+            updateBleThresholdLine();
+        });
+        document.getElementById("toggleBleThresholdBtn").addEventListener("click", function() {
+            bleThresholdEnabled = !bleThresholdEnabled;
+            this.textContent = bleThresholdEnabled ? "Disable Alert" : "Enable Alert";
+            updateBleThresholdLine();
         });
 
         /* ---------------- Serial Plotter Code ---------------- */
@@ -194,7 +273,8 @@
                 plot_bgcolor: "#1E1E1E",
                 font: { color: "#EEEEEE" },
                 xaxis: { title: "time(s)", gridcolor: "#333" },
-                yaxis: { title: "value", gridcolor: "#333" }
+                yaxis: { title: "value", gridcolor: "#333" },
+                shapes: thresholdEnabled ? [thresholdLine] : []
             });
         }
 
@@ -205,17 +285,20 @@
         let dataBuffer = [];
         let startTime;
         let incomingBuffer = "";
-        const updateInterval = 100; // 100ms update interval
+        const updateInterval = 100;
         const maxDataPoints = 500;
         let plotNeedsUpdate = false;
         let updateIntervalId = null;
         const maxDataListItems = 100;
         const dataDisplay = document.getElementById("dataDisplay");
-        let isPaused = false; // pause/resume state
-
-        // Global min and max values
+        let isPaused = false;
         let currentMin = Infinity;
         let currentMax = -Infinity;
+        let sum = 0; // 新增
+        let count = 0; // 新增
+
+        // 新增：儲存所有 Serial 資料
+        let allSerialData = [];
 
         async function connectSerial() {
             if ("serial" in navigator) {
@@ -265,9 +348,13 @@
                                     let elapsed = (currentTime - startTime) / 1000;
                                     timeData.push(elapsed);
                                     dataBuffer.push(numOneDecimal);
+                                    sum += numOneDecimal; // 新增
+                                    count++; // 新增
                                     if (timeData.length > maxDataPoints) {
+                                        let removed = dataBuffer.shift();
                                         timeData.shift();
-                                        dataBuffer.shift();
+                                        sum -= removed; // 新增
+                                        count--; // 新增
                                     }
                                     plotNeedsUpdate = true;
                                     
@@ -279,8 +366,9 @@
                                     }
                                     document.getElementById("minValue").textContent = "Min: " + currentMin.toFixed(1);
                                     document.getElementById("maxValue").textContent = "Max: " + currentMax.toFixed(1);
+                                    document.getElementById("avgValue").textContent = "Avg: " + (count > 0 ? (sum / count).toFixed(1) : "--"); // 新增
 
-                                    appendData(`${elapsed.toFixed(2)}s: ${numOneDecimal.toFixed(1)}`);
+                                    appendData(`${elapsed.toFixed(2)}s: ${numOneDecimal.toFixed(1)}`, numOneDecimal);
                                 }
                             }
                         });
@@ -321,7 +409,7 @@
             location.reload();
         }
 
-        function appendData(text) {
+        function appendData(text, value) {
             const p = document.createElement("p");
             p.textContent = text;
             dataDisplay.appendChild(p);
@@ -329,21 +417,36 @@
             while (dataDisplay.childNodes.length > maxDataListItems) {
                 dataDisplay.removeChild(dataDisplay.firstChild);
             }
+            // 新增：儲存所有資料
+            let match = text.match(/^([\d.]+)s: ([\d.-]+)$/);
+            if (match) {
+                allSerialData.push({ time: match[1], value: match[2] });
+            }
+            // Threshold notification
+            if (thresholdEnabled && typeof value === "number" && value > threshold) {
+                if (!document.getElementById("thresholdAlert")) {
+                    const alertDiv = document.createElement("div");
+                    alertDiv.id = "thresholdAlert";
+                    alertDiv.textContent = `⚠️ Value exceeded threshold (${threshold})!`;
+                    alertDiv.style = "color: #fff; background: #d32f2f; padding: 10px; margin-top: 10px; border-radius: 4px;";
+                    dataDisplay.parentNode.insertBefore(alertDiv, dataDisplay);
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 2000);
+                }
+            }
         }
 
         document.getElementById("connect").addEventListener("click", connectSerial);
         document.getElementById("stop").addEventListener("click", toggleSerial);
         document.getElementById("reset").addEventListener("click", resetPage);
 
-        // 匯出 Serial CSV
+        // 修改：匯出所有 Serial 資料
         document.getElementById("exportCsv").addEventListener("click", function() {
             let rows = [];
             rows.push(["Time", "Value"]);
-            dataDisplay.querySelectorAll("p").forEach(p => {
-                let match = p.textContent.match(/^([\d.]+)s: ([\d.-]+)$/);
-                if (match) {
-                    rows.push([match[1], match[2]]);
-                }
+            allSerialData.forEach(item => {
+                rows.push([item.time, item.value]);
             });
             let csvContent = rows.map(e => e.join(",")).join("\r\n");
             let blob = new Blob([csvContent], { type: "text/csv" });
@@ -373,7 +476,8 @@
                 yaxis: {
                     title: "value",
                     gridcolor: "#333"
-                }
+                },
+                shapes: bleThresholdEnabled ? [bleThresholdLine] : []
             });
         }
 
@@ -384,7 +488,12 @@
         let bleCurrentMin = Infinity;
         let bleCurrentMax = -Infinity;
         let bleStartTime;
+        let bleSum = 0; // 新增
+        let bleCount = 0; // 新增
         const bleDataDisplay = document.getElementById("bleDataDisplay");
+
+        // 新增：儲存所有 BLE 資料
+        let bleAllData = [];
 
         async function connectBLE() {
             try {
@@ -401,7 +510,6 @@
 
                 document.getElementById("status").textContent = "Connected";
                 
-                // 設定 BLE 起始時間
                 bleStartTime = new Date();
 
                 adcCharacteristic.addEventListener('characteristicvaluechanged', handleADCData);
@@ -430,28 +538,59 @@
                         if (num > bleCurrentMax) {
                             bleCurrentMax = num;
                         }
+                        bleSum += num; // 新增
+                        bleCount++; // 新增
+                        if (bleCount > maxDataPoints) { // 保持窗口大小
+                            let firstP = bleDataDisplay.firstChild;
+                            if (firstP) {
+                                let match = firstP.textContent.match(/^([\d.]+)s: ([\d.-]+)$/);
+                                if (match) {
+                                    bleSum -= parseFloat(match[2]);
+                                    bleCount--;
+                                }
+                            }
+                        }
                         document.getElementById("bleMinValue").textContent = "Min: " + bleCurrentMin.toFixed(1);
                         document.getElementById("bleMaxValue").textContent = "Max: " + bleCurrentMax.toFixed(1);
+                        document.getElementById("bleAvgValue").textContent = "Avg: " + (bleCount > 0 ? (bleSum / bleCount).toFixed(1) : "--"); // 新增
 
-                        // 使用數值型式的 elapsed 便於圖表更新
                         let currentTime = new Date();
                         let elapsedNum = (currentTime - bleStartTime) / 1000;
-                        const p = document.createElement("p");
-                        p.textContent = `${elapsedNum.toFixed(2)}s: ${num.toFixed(1)}`;
-                        bleDataDisplay.appendChild(p);
-                        bleDataDisplay.scrollTop = bleDataDisplay.scrollHeight;
-                        while (bleDataDisplay.childNodes.length > maxDataListItems) {
-                            bleDataDisplay.removeChild(bleDataDisplay.firstChild);
-                        }
-                        
-                        // 擴充 BLE Plot，x 軸以數值型式傳入
-                        Plotly.extendTraces("blePlot", {
-                            x: [[elapsedNum]],
-                            y: [[num]]
-                        }, [0], maxDataPoints);
+                        appendBleData(`${elapsedNum.toFixed(2)}s: ${num.toFixed(1)}`, num, elapsedNum);
                     }
                 }
             });
+        }
+
+        function appendBleData(text, value, elapsedNum) {
+            const p = document.createElement("p");
+            p.textContent = text;
+            bleDataDisplay.appendChild(p);
+            bleDataDisplay.scrollTop = bleDataDisplay.scrollHeight;
+            while (bleDataDisplay.childNodes.length > maxDataListItems) {
+                bleDataDisplay.removeChild(bleDataDisplay.firstChild);
+            }
+            Plotly.extendTraces("blePlot", {
+                x: [[elapsedNum]],
+                y: [[value]]
+            }, [0], maxDataPoints);
+
+            // 新增：儲存所有 BLE 資料
+            bleAllData.push({ time: elapsedNum.toFixed(2), value: value.toFixed(1) });
+
+            // Threshold notification
+            if (bleThresholdEnabled && typeof value === "number" && value > bleThreshold) {
+                if (!document.getElementById("bleThresholdAlert")) {
+                    const alertDiv = document.createElement("div");
+                    alertDiv.id = "bleThresholdAlert";
+                    alertDiv.textContent = `⚠️ Value exceeded threshold (${bleThreshold})!`;
+                    alertDiv.style = "color: #fff; background: #d32f2f; padding: 10px; margin-top: 10px; border-radius: 4px;";
+                    bleDataDisplay.parentNode.insertBefore(alertDiv, bleDataDisplay);
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 2000);
+                }
+            }
         }
 
         function toggleBLEPause() {
@@ -466,15 +605,12 @@
             location.reload();
         });
 
-        // 匯出 BLE CSV
+        // 修改：匯出所有 BLE 資料
         document.getElementById("exportBleCsv").addEventListener("click", function() {
             let rows = [];
             rows.push(["Time", "Value"]);
-            bleDataDisplay.querySelectorAll("p").forEach(p => {
-                let match = p.textContent.match(/^([\d.]+)s: ([\d.-]+)$/);
-                if (match) {
-                    rows.push([match[1], match[2]]);
-                }
+            bleAllData.forEach(item => {
+                rows.push([item.time, item.value]);
             });
             let csvContent = rows.map(e => e.join(",")).join("\r\n");
             let blob = new Blob([csvContent], { type: "text/csv" });
