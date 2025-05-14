@@ -102,7 +102,8 @@
 
             <div id="github">
                 <a href="https://github.com/TONYWU115/web-design-project">
-                    <img src="./image/github icon.png" style="width: 33px;"></a>
+                    <img src="./image/github icon.png" style="width: 33px;">
+                </a>
             </div>
         </div>
 
@@ -131,8 +132,13 @@
         </select>
         <button id="connect" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
-        <button id="reset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
+        <button id="clearChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
+        <!-- Move the Home button to the top-right corner -->
+        <div style="position: absolute; top: 20px; right: 30px; z-index: 10;">
+            <img id="reset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
+        </div>
 
+        
         <!-- Threshold controls -->
         <label for="thresholdInput" style="margin-left:20px;">Threshold:</label>
         <input type="number" id="thresholdInput" value="0" style="width:80px;">
@@ -144,6 +150,7 @@
         <div class="data-header">
             <h2 style="margin: 0;">Received Data</h2>
             <button id="exportCsv" class="export-btn">Export CSV</button>
+            <!-- <button id="clearChart" class="export-btn">Clear Chart</button> -->
         </div>
         <br>
         <div style="margin-bottom: 10px;">
@@ -159,7 +166,11 @@
         <h2>BLE Data Plotter</h2>
         <button id="connectBLE" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
-        <button id="bleReset" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Reset</button>
+        <button id="clearBleChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
+        <!-- Move the Home button to the top-right corner -->
+        <div style="position: absolute; top: 20px; right: 30px; z-index: 10;">
+            <img id="bleReset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
+        </div>
 
         <!-- Threshold controls -->
         <label for="bleThresholdInput" style="margin-left:20px;">Threshold:</label>
@@ -174,6 +185,7 @@
         <div class="data-header">
             <h2 style="margin: 0;">Received Data</h2>
             <button id="exportBleCsv" class="export-btn">Export CSV</button>
+            <!-- <button id="clearBleChart" class="export-btn">Clear Chart</button> -->
         </div>
         <br>
         <div style="margin-bottom: 10px;">
@@ -294,10 +306,8 @@
         let isPaused = false;
         let currentMin = Infinity;
         let currentMax = -Infinity;
-        let sum = 0; // 新增
-        let count = 0; // 新增
-
-        // 新增：儲存所有 Serial 資料
+        let sum = 0;
+        let count = 0;
         let allSerialData = [];
 
         async function connectSerial() {
@@ -348,13 +358,13 @@
                                     let elapsed = (currentTime - startTime) / 1000;
                                     timeData.push(elapsed);
                                     dataBuffer.push(numOneDecimal);
-                                    sum += numOneDecimal; // 新增
-                                    count++; // 新增
+                                    sum += numOneDecimal;
+                                    count++;
                                     if (timeData.length > maxDataPoints) {
                                         let removed = dataBuffer.shift();
                                         timeData.shift();
-                                        sum -= removed; // 新增
-                                        count--; // 新增
+                                        sum -= removed;
+                                        count--;
                                     }
                                     plotNeedsUpdate = true;
                                     
@@ -366,7 +376,7 @@
                                     }
                                     document.getElementById("minValue").textContent = "Min: " + currentMin.toFixed(1);
                                     document.getElementById("maxValue").textContent = "Max: " + currentMax.toFixed(1);
-                                    document.getElementById("avgValue").textContent = "Avg: " + (count > 0 ? (sum / count).toFixed(1) : "--"); // 新增
+                                    document.getElementById("avgValue").textContent = "Avg: " + (count > 0 ? (sum / count).toFixed(1) : "--");
 
                                     appendData(`${elapsed.toFixed(2)}s: ${numOneDecimal.toFixed(1)}`, numOneDecimal);
                                 }
@@ -417,12 +427,10 @@
             while (dataDisplay.childNodes.length > maxDataListItems) {
                 dataDisplay.removeChild(dataDisplay.firstChild);
             }
-            // 新增：儲存所有資料
             let match = text.match(/^([\d.]+)s: ([\d.-]+)$/);
             if (match) {
                 allSerialData.push({ time: match[1], value: match[2] });
             }
-            // Threshold notification
             if (thresholdEnabled && typeof value === "number" && value > threshold) {
                 if (!document.getElementById("thresholdAlert")) {
                     const alertDiv = document.createElement("div");
@@ -441,7 +449,6 @@
         document.getElementById("stop").addEventListener("click", toggleSerial);
         document.getElementById("reset").addEventListener("click", resetPage);
 
-        // 修改：匯出所有 Serial 資料
         document.getElementById("exportCsv").addEventListener("click", function() {
             let rows = [];
             rows.push(["Time", "Value"]);
@@ -454,6 +461,35 @@
             a.href = URL.createObjectURL(blob);
             a.download = "serial_data.csv";
             a.click();
+        });
+
+        // 清空 Serial 圖表與資料，並重設時間
+        document.getElementById("clearChart").addEventListener("click", function() {
+            timeData = [];
+            dataBuffer = [];
+            currentMin = Infinity;
+            currentMax = -Infinity;
+            sum = 0;
+            count = 0;
+            startTime = new Date(); // 新增：重設 Serial 時間
+            Plotly.newPlot("plot", [{
+                x: [],
+                y: [],
+                mode: "lines",
+                line: { color: "#80CAF6" }
+            }], {
+                title: "Real-time Data Plot",
+                paper_bgcolor: "#121212",
+                plot_bgcolor: "#1E1E1E",
+                font: { color: "#EEEEEE" },
+                xaxis: { title: "time(s)", gridcolor: "#333" },
+                yaxis: { title: "value", gridcolor: "#333" },
+                shapes: thresholdEnabled ? [thresholdLine] : []
+            });
+            document.getElementById("minValue").textContent = "Min: --";
+            document.getElementById("maxValue").textContent = "Max: --";
+            document.getElementById("avgValue").textContent = "Avg: --";
+            dataDisplay.innerHTML = "";
         });
 
         /* ---------------- BLE Plotter Code ---------------- */
@@ -488,11 +524,9 @@
         let bleCurrentMin = Infinity;
         let bleCurrentMax = -Infinity;
         let bleStartTime;
-        let bleSum = 0; // 新增
-        let bleCount = 0; // 新增
+        let bleSum = 0;
+        let bleCount = 0;
         const bleDataDisplay = document.getElementById("bleDataDisplay");
-
-        // 新增：儲存所有 BLE 資料
         let bleAllData = [];
 
         async function connectBLE() {
@@ -538,9 +572,9 @@
                         if (num > bleCurrentMax) {
                             bleCurrentMax = num;
                         }
-                        bleSum += num; // 新增
-                        bleCount++; // 新增
-                        if (bleCount > maxDataPoints) { // 保持窗口大小
+                        bleSum += num;
+                        bleCount++;
+                        if (bleCount > maxDataPoints) {
                             let firstP = bleDataDisplay.firstChild;
                             if (firstP) {
                                 let match = firstP.textContent.match(/^([\d.]+)s: ([\d.-]+)$/);
@@ -552,7 +586,7 @@
                         }
                         document.getElementById("bleMinValue").textContent = "Min: " + bleCurrentMin.toFixed(1);
                         document.getElementById("bleMaxValue").textContent = "Max: " + bleCurrentMax.toFixed(1);
-                        document.getElementById("bleAvgValue").textContent = "Avg: " + (bleCount > 0 ? (bleSum / bleCount).toFixed(1) : "--"); // 新增
+                        document.getElementById("bleAvgValue").textContent = "Avg: " + (bleCount > 0 ? (bleSum / bleCount).toFixed(1) : "--");
 
                         let currentTime = new Date();
                         let elapsedNum = (currentTime - bleStartTime) / 1000;
@@ -574,11 +608,7 @@
                 x: [[elapsedNum]],
                 y: [[value]]
             }, [0], maxDataPoints);
-
-            // 新增：儲存所有 BLE 資料
             bleAllData.push({ time: elapsedNum.toFixed(2), value: value.toFixed(1) });
-
-            // Threshold notification
             if (bleThresholdEnabled && typeof value === "number" && value > bleThreshold) {
                 if (!document.getElementById("bleThresholdAlert")) {
                     const alertDiv = document.createElement("div");
@@ -605,7 +635,6 @@
             location.reload();
         });
 
-        // 修改：匯出所有 BLE 資料
         document.getElementById("exportBleCsv").addEventListener("click", function() {
             let rows = [];
             rows.push(["Time", "Value"]);
@@ -618,6 +647,40 @@
             a.href = URL.createObjectURL(blob);
             a.download = "ble_data.csv";
             a.click();
+        });
+
+        // 清空 BLE 圖表與資料，並重設時間
+        document.getElementById("clearBleChart").addEventListener("click", function() {
+            bleStartTime = new Date(); // 新增：重設 BLE 時間
+            Plotly.newPlot("blePlot", [{
+                x: [],
+                y: [],
+                mode: "lines",
+                line: { color: "#80CAF6" }
+            }], {
+                title: "Real-time Data Plot",
+                paper_bgcolor: "#121212",
+                plot_bgcolor: "#1E1E1E",
+                font: { color: "#EEEEEE" },
+                xaxis: {
+                    title: "time(s)",
+                    gridcolor: "#333",
+                    fixedrange: true
+                },
+                yaxis: {
+                    title: "value",
+                    gridcolor: "#333"
+                },
+                shapes: bleThresholdEnabled ? [bleThresholdLine] : []
+            });
+            bleCurrentMin = Infinity;
+            bleCurrentMax = -Infinity;
+            bleSum = 0;
+            bleCount = 0;
+            document.getElementById("bleMinValue").textContent = "Min: --";
+            document.getElementById("bleMaxValue").textContent = "Max: --";
+            document.getElementById("bleAvgValue").textContent = "Avg: --";
+            bleDataDisplay.innerHTML = "";
         });
     </script>
 </body>
