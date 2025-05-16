@@ -13,7 +13,6 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
             background-color: #121212;
             color: #EEEEEE;
         }
@@ -23,8 +22,15 @@
             background-color: #1E1E1E;
             border: 1px solid #333;
         }
+        #welcome-title {
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         button {
-            margin-right: 10px;
+            margin-left: 10px;
             background-color: #333;
             border: none;
             color: #FFFFFF;
@@ -65,7 +71,8 @@
             align-items: center;
         }
         #github {
-            margin-left: 8px;
+            margin-left: 20px;
+            margin-top: 2px;
         }
         .data-header {
             display: flex;
@@ -85,18 +92,45 @@
         .export-btn:hover {
             background-color: #1565c0;
         }
+        .export-btn.enabled {
+            background-color: #ca8a04 !important;
+            color: #fff !important;
+        }
+        .export-btn.disabled {
+            background-color: #43a047 !important;
+            color: #fff !important;
+        }
+        .threshold-controls-container {
+            background: #6b7280;
+            display: inline-flex;
+            align-items: center;
+            padding: 3.5px 16px;
+            border-radius: 6px;
+            margin-left: 30px;
+        }
+        /* .threshold-controls-container input[type="number"] {
+            background: #232526;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 4px 8px;
+            width: 60px;
+            margin-left: 8px;
+            font-size: 15px;
+            transition: border 0.2s;
+        } */
     </style>
 </head>
 <body>
     <div id="welcomePage">
-        <h1>Welcome to the Web Data Plotter</h1>
+        <h1 id="welcome-title">Welcome to the Web Data Plotter</h1>
 
         <div class="start-container">
-            <button id="serialButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px;">
+            <button id="serialButton" class="welcome-btn" style="width: 110px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px;">
                 <img src="./image/usb icon.png" style="width: 15px; margin-top: -3px;">Serial
             </button>
             
-            <button id="bleButton" style="width: 80px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <button id="bleButton" class="welcome-btn" style="width: 110px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <img src="./image/bluetooth icon.png" style="width: 8px; margin-top: -2px;">BLE
             </button>
 
@@ -121,8 +155,9 @@
 
     <!-- Serial Plotter Content -->
     <div id="serialContent" style="display: none;">
-        <h1>Web Serial Plotter</h1>
-        <label for="baudRate">Baud Rate:</label>
+        <h2>Web Serial Plotter</h2>
+        
+        <label for="baudRate"><b>Baud Rate:</b></label>
         <select id="baudRate">
             <option value="9600">9600</option>
             <option value="19200">19200</option>
@@ -130,27 +165,29 @@
             <option value="57600">57600</option>
             <option value="115200" selected>115200</option>
         </select>
+
         <button id="connect" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
         <button id="clearChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
-        <!-- Move the Home button to the top-right corner -->
-        <div style="position: absolute; top: 20px; right: 30px; z-index: 10;">
+
+        <div style="position: absolute; top: 20px; right: 30px;">
             <img id="reset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
         </div>
 
-        
         <!-- Threshold controls -->
-        <label for="thresholdInput" style="margin-left:20px;">Threshold:</label>
-        <input type="number" id="thresholdInput" value="0" style="width:80px;">
-        <button id="setThresholdBtn" class="export-btn" style="margin-left:5px;">Set</button>
-        <button id="toggleThresholdBtn" class="export-btn" style="margin-left:5px; width: 120px;">Enable Alert</button>
+        <div class="threshold-controls-container">
+            <label for="thresholdInput" style="margin-left:20px;"><b>Threshold :</b></label>
+            <input type="number" id="thresholdInput" value="0" style="width:40px;">
+            <button id="setThresholdBtn" class="export-btn">Set</button>
+            <button id="toggleThresholdBtn" class="export-btn disabled" style="width: 120px;">Enable Alert</button>
+        </div>
         <br><br>
+
         <div id="plot"></div>
         <br><br>
         <div class="data-header">
             <h2 style="margin: 0;">Received Data</h2>
             <button id="exportCsv" class="export-btn">Export CSV</button>
-            <!-- <button id="clearChart" class="export-btn">Clear Chart</button> -->
         </div>
         <br>
         <div style="margin-bottom: 10px;">
@@ -159,24 +196,29 @@
             <span id="avgValue" style="margin-left: 20px;">Avg: --</span>
         </div>
         <div id="dataDisplay"></div>
+
     </div>
 
     <!-- BLE Plotter Content -->
     <div id="bleContent" style="display: none;">
         <h2>BLE Data Plotter</h2>
-        <button id="connectBLE" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
+
+        <button id="connectBLE" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-left: 0px;">Connect</button>
         <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
         <button id="clearBleChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
-        <!-- Move the Home button to the top-right corner -->
+
         <div style="position: absolute; top: 20px; right: 30px; z-index: 10;">
             <img id="bleReset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
         </div>
 
         <!-- Threshold controls -->
-        <label for="bleThresholdInput" style="margin-left:20px;">Threshold:</label>
-        <input type="number" id="bleThresholdInput" value="0" style="width:80px;">
-        <button id="setBleThresholdBtn" class="export-btn" style="margin-left:5px;">Set</button>
-        <button id="toggleBleThresholdBtn" class="export-btn" style="margin-left:5px; width: 120px;">Enable Alert</button>
+        <div class="threshold-controls-container">
+            <label for="bleThresholdInput" style="margin-left:20px;"><b>Threshold:</b></label>
+            <input type="number" id="bleThresholdInput" value="0" style="width:40px;">
+            <button id="setBleThresholdBtn" class="export-btn">Set</button>
+            <button id="toggleBleThresholdBtn" class="export-btn disabled" style="width: 120px;">Enable Alert</button>
+        </div>
+        
         <p id="status">Not connected</p>
 
         <div id="blePlot"></div>
@@ -185,7 +227,6 @@
         <div class="data-header">
             <h2 style="margin: 0;">Received Data</h2>
             <button id="exportBleCsv" class="export-btn">Export CSV</button>
-            <!-- <button id="clearBleChart" class="export-btn">Clear Chart</button> -->
         </div>
         <br>
         <div style="margin-bottom: 10px;">
@@ -194,6 +235,7 @@
             <span id="bleAvgValue" style="margin-left: 20px;">Avg: --</span>
         </div>
         <div id="bleDataDisplay"></div>
+        
     </div>
 
     <script>
@@ -237,6 +279,8 @@
         document.getElementById("toggleThresholdBtn").addEventListener("click", function() {
             thresholdEnabled = !thresholdEnabled;
             this.textContent = thresholdEnabled ? "Disable Alert" : "Enable Alert";
+            this.classList.toggle("enabled", thresholdEnabled);
+            this.classList.toggle("disabled", !thresholdEnabled);
             updateThresholdLine();
         });
 
@@ -269,6 +313,8 @@
         document.getElementById("toggleBleThresholdBtn").addEventListener("click", function() {
             bleThresholdEnabled = !bleThresholdEnabled;
             this.textContent = bleThresholdEnabled ? "Disable Alert" : "Enable Alert";
+            this.classList.toggle("enabled", bleThresholdEnabled);
+            this.classList.toggle("disabled", !bleThresholdEnabled);
             updateBleThresholdLine();
         });
 
@@ -471,7 +517,7 @@
             currentMax = -Infinity;
             sum = 0;
             count = 0;
-            startTime = new Date(); // 新增：重設 Serial 時間
+            startTime = new Date();
             Plotly.newPlot("plot", [{
                 x: [],
                 y: [],
@@ -651,7 +697,7 @@
 
         // 清空 BLE 圖表與資料，並重設時間
         document.getElementById("clearBleChart").addEventListener("click", function() {
-            bleStartTime = new Date(); // 新增：重設 BLE 時間
+            bleStartTime = new Date();
             Plotly.newPlot("blePlot", [{
                 x: [],
                 y: [],
