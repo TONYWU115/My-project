@@ -108,7 +108,7 @@
             border-radius: 6px;
             margin-left: 30px;
         }
-        /* .threshold-controls-container input[type="number"] {
+    /* .threshold-controls-container input[type="number"] {
             background: #232526;
             color: #fff;
             border: 1px solid #444;
@@ -119,6 +119,47 @@
             font-size: 15px;
             transition: border 0.2s;
         } */
+
+        #help-tooltip-container {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            z-index: 2;
+            width: 30px;
+            height: 30px;
+        }
+        #help-icon {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background: white;
+            border-radius: 50%;
+            transition: background 0.2s;
+            position: relative;
+        }
+        #help-icon:hover {
+            background: #95979a;
+        }
+        #help-tooltip {
+            display: none;
+            position: absolute;
+            right: 0;
+            bottom: 50px;
+            background: #232526;
+            color: #fff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px #000a;
+            font-size: 15px;
+            width: 400px;
+            line-height: 1.6;
+            text-align: left;
+            z-index: 2;
+        }
+        #help-tooltip.visible {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -207,7 +248,7 @@
         <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
         <button id="clearBleChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
 
-        <div style="position: absolute; top: 20px; right: 30px; z-index: 10;">
+        <div style="position: absolute; top: 20px; right: 30px;">
             <img id="bleReset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
         </div>
 
@@ -238,7 +279,40 @@
         
     </div>
 
+    <!-- 右下角提示圖示與提示框 -->
+    <div id="help-tooltip-container">
+        <img src="./image/help.png" id="help-icon" alt="Help" />
+        <div id="help-tooltip">
+            <b>使用教學：</b><br>
+            <ul style="padding-left: 20px; margin: 0;">
+                <li>點選 Serial 或 BLE 進入對應模式。</li>
+                <li>連接裝置後，數據會即時顯示與繪圖。</li>
+                <li>可設定閾值 (Threshold)，當數據超過該值時會有提示。</li>
+                <li>可點選 Stop 暫停數據接收，Continue 會恢復接收。</li>
+                <li>按下 Clear 清除資料。</li>
+                <li>按下 Export CSV 下載數據。</li>
+                <li>點選 Home 圖示回到首頁。</li>
+            </ul>
+        </div>
+    </div>
+
     <script>
+        // 教學提示圖示 hover 顯示
+        const helpIcon = document.getElementById('help-icon');
+        const helpTooltip = document.getElementById('help-tooltip');
+        helpIcon.addEventListener('mouseenter', () => {
+            helpTooltip.classList.add('visible');
+        });
+        helpIcon.addEventListener('mouseleave', () => {
+            helpTooltip.classList.remove('visible');
+        });
+        helpTooltip.addEventListener('mouseenter', () => {
+            helpTooltip.classList.add('visible');
+        });
+        helpTooltip.addEventListener('mouseleave', () => {
+            helpTooltip.classList.remove('visible');
+        });
+
         document.getElementById("serialButton").addEventListener("click", function() {
             document.getElementById("welcomePage").style.display = "none";
             document.getElementById("serialContent").style.display = "block";
