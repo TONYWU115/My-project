@@ -16,21 +16,8 @@
             background-color: #121212;
             color: #EEEEEE;
         }
-        #plot, #blePlot {
-            width: 100%;
-            height: 500px;
-            background-color: #1E1E1E;
-            border: 1px solid #333;
-        }
-        #welcome-title {
-            animation: fadeIn 1s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
         button {
-            margin-left: 10px;
+            margin-right: 10px;
             background-color: #333;
             border: none;
             color: #FFFFFF;
@@ -38,20 +25,19 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
+            transition: background 0.2s;
         }
         button:hover {
             background-color: #444;
         }
-        #dataDisplay,
-        #bleDataDisplay {
-            margin-top: 20px;
-            height: 200px;
-            overflow-y: auto;
-            border: 1px solid #333;
-            padding: 10px;
-            font-family: monospace;
-            background-color: #1E1E1E;
-            color: #EEEEEE;
+
+        #welcome-title {
+            animation: fadeIn 1s ease-in-out;
+            text-align: center;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         #welcomePage {
             position: fixed;
@@ -71,8 +57,25 @@
             align-items: center;
         }
         #github {
-            margin-left: 20px;
+            margin-left: 10px;
             margin-top: 2px;
+        }
+        #plot, #blePlot {
+            width: 100%;
+            height: 500px;
+            background-color: #1E1E1E;
+            border: 1px solid #333;
+        }
+        #dataDisplay,
+        #bleDataDisplay {
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: monospace;
+            background-color: #1E1E1E;
+            color: #EEEEEE;
         }
         .data-header {
             display: flex;
@@ -87,7 +90,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-left: 10px;
+            margin-right: 10px;
         }
         .export-btn:hover {
             background-color: #1565c0;
@@ -103,23 +106,23 @@
         .threshold-controls-container {
             background: #6b7280;
             display: inline-flex;
+            flex-wrap: wrap;
             align-items: center;
             padding: 3.5px 16px;
             border-radius: 6px;
-            margin-left: 30px;
         }
-    /* .threshold-controls-container input[type="number"] {
-            background: #232526;
+        .threshold-controls-container input[type="number"] {
+            margin-left: 8px;
+            margin-right: 10px;
+            width: 30px;
+            /* background: #232526;
             color: #fff;
             border: 1px solid #444;
             border-radius: 4px;
             padding: 4px 8px;
-            width: 60px;
-            margin-left: 8px;
             font-size: 15px;
-            transition: border 0.2s;
-        } */
-
+            transition: border 0.2s; */
+        }
         #help-tooltip-container {
             position: fixed;
             right: 30px;
@@ -150,11 +153,15 @@
             padding: 16px 20px;
             border-radius: 8px;
             box-shadow: 0 4px 16px #000a;
-            font-size: 15px;
-            width: 400px;
+            font-size: 14px;
             line-height: 1.6;
             text-align: left;
             z-index: 2;
+            width: auto;
+            min-width: 280px;
+            max-width: 90vw;
+            box-sizing: border-box;
+            word-break: break-word;
         }
         #help-tooltip.visible {
             display: block;
@@ -196,20 +203,20 @@
 
     <!-- Serial Plotter Content -->
     <div id="serialContent" style="display: none;">
-        <h2>Web Serial Plotter</h2>
+        <h2>Serial Data Plotter</h2>
         
-        <label for="baudRate"><b>Baud Rate:</b></label>
-        <select id="baudRate">
+        <label for="baudRate"><b>Baud Rate :</b></label>
+        <select id="baudRate" style="margin-right: 10px;">
             <option value="9600">9600</option>
             <option value="19200">19200</option>
             <option value="38400">38400</option>
             <option value="57600">57600</option>
             <option value="115200" selected>115200</option>
         </select>
-
+        
         <button id="connect" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
-        <button id="clearChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
+        <button id="clearChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-right: 10px;">Clear</button>
 
         <div style="position: absolute; top: 20px; right: 30px;">
             <img id="reset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
@@ -217,8 +224,8 @@
 
         <!-- Threshold controls -->
         <div class="threshold-controls-container">
-            <label for="thresholdInput" style="margin-left:20px;"><b>Threshold :</b></label>
-            <input type="number" id="thresholdInput" value="0" style="width:40px;">
+            <label for="thresholdInput"><b>Threshold :</b></label>
+            <input type="number" id="thresholdInput" value="0">
             <button id="setThresholdBtn" class="export-btn">Set</button>
             <button id="toggleThresholdBtn" class="export-btn disabled" style="width: 120px;">Enable Alert</button>
         </div>
@@ -246,7 +253,7 @@
 
         <button id="connectBLE" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-left: 0px;">Connect</button>
         <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
-        <button id="clearBleChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Clear</button>
+        <button id="clearBleChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-right: 10px;">Clear</button>
 
         <div style="position: absolute; top: 20px; right: 30px;">
             <img id="bleReset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
@@ -254,8 +261,8 @@
 
         <!-- Threshold controls -->
         <div class="threshold-controls-container">
-            <label for="bleThresholdInput" style="margin-left:20px;"><b>Threshold:</b></label>
-            <input type="number" id="bleThresholdInput" value="0" style="width:40px;">
+            <label for="bleThresholdInput"><b>Threshold :</b></label>
+            <input type="number" id="bleThresholdInput" value="0">
             <button id="setBleThresholdBtn" class="export-btn">Set</button>
             <button id="toggleBleThresholdBtn" class="export-btn disabled" style="width: 120px;">Enable Alert</button>
         </div>
@@ -286,9 +293,9 @@
             <b>使用教學：</b><br>
             <ul style="padding-left: 20px; margin: 0;">
                 <li>點選 Serial 或 BLE 進入對應模式。</li>
-                <li>連接裝置後，數據會即時顯示與繪圖。</li>
+                <li>連接裝置後，數據會即時顯示。</li>
                 <li>可設定閾值 (Threshold)，當數據超過該值時會有提示。</li>
-                <li>可點選 Stop 暫停數據接收，Continue 會恢復接收。</li>
+                <li>可點選 Stop 暫停數據接收，Continue 恢復接收。</li>
                 <li>按下 Clear 清除資料。</li>
                 <li>按下 Export CSV 下載數據。</li>
                 <li>點選 Home 圖示回到首頁。</li>
@@ -311,6 +318,9 @@
         });
         helpTooltip.addEventListener('mouseleave', () => {
             helpTooltip.classList.remove('visible');
+        });
+        helpIcon.addEventListener('click', () => {
+            helpTooltip.classList.toggle('visible');
         });
 
         document.getElementById("serialButton").addEventListener("click", function() {
