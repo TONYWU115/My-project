@@ -218,8 +218,8 @@
         <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
         <button id="clearChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-right: 10px;">Clear</button>
 
-        <div style="position: absolute; top: 20px; right: 30px;">
-            <img id="reset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
+        <div style="position: absolute; top: 20px; right: 20px;">
+            <img id="reset" src="./image/home.png" alt="Home" style="width: 35px; cursor: pointer">
         </div>
 
         <!-- Threshold controls -->
@@ -227,7 +227,7 @@
             <label for="thresholdInput"><b>Threshold :</b></label>
             <input type="number" id="thresholdInput" value="0">
             <button id="setThresholdBtn" class="export-btn">Set</button>
-            <button id="toggleThresholdBtn" class="export-btn disabled" style="width: 120px;">Enable Alert</button>
+            <button id="toggleThresholdBtn" class="export-btn disabled" style="width: 130px; margin-right: 0px;">Enable Alert</button>
         </div>
         <br><br>
 
@@ -255,8 +255,8 @@
         <button id="bleStop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Stop</button>
         <button id="clearBleChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-right: 10px;">Clear</button>
 
-        <div style="position: absolute; top: 20px; right: 30px;">
-            <img id="bleReset" src="./image/home.png" alt="Home" style="width: 40px; cursor: pointer">
+        <div style="position: absolute; top: 20px; right: 20px;">
+            <img id="bleReset" src="./image/home.png" alt="Home" style="width: 35px; cursor: pointer">
         </div>
 
         <!-- Threshold controls -->
@@ -264,7 +264,7 @@
             <label for="bleThresholdInput"><b>Threshold :</b></label>
             <input type="number" id="bleThresholdInput" value="0">
             <button id="setBleThresholdBtn" class="export-btn">Set</button>
-            <button id="toggleBleThresholdBtn" class="export-btn disabled" style="width: 120px;">Enable Alert</button>
+            <button id="toggleBleThresholdBtn" class="export-btn disabled" style="width: 130px; margin-right: 0px;">Enable Alert</button>
         </div>
         
         <p id="status">Not connected</p>
@@ -307,6 +307,10 @@
         // 教學提示圖示 hover 顯示
         const helpIcon = document.getElementById('help-icon');
         const helpTooltip = document.getElementById('help-tooltip');
+        helpIcon.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            helpTooltip.classList.toggle('visible');
+        });
         helpIcon.addEventListener('mouseenter', () => {
             helpTooltip.classList.add('visible');
         });
