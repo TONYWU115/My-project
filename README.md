@@ -12,13 +12,14 @@
 * 繪製成波型
 * 顯示數據最大最小值、平均值
 * 設定警示值
+* 偵測數據突變
 * 將數據輸出成CSV檔
 
 ### 注意事項
 - 若使用`serial plotter`，則需使用支援 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) 的瀏覽器
     - Chrome
     - Edge
-<!-- - 單晶片 Buad Rate 要設定成`9600`,`19200`,`38400`,`57600`,`115200`其中一個 -->
+- 單晶片 Buad Rate 要設定成`9600`,`19200`,`38400`,`57600`,`115200`其中一個
 - 數據格式 `"%.f\r\n"`
     ```C
     sprintf((char*)uart_buffer, "%.f\r\n", value);
