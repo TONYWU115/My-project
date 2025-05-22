@@ -104,17 +104,19 @@
             color: #fff !important;
         }
         .threshold-controls-container {
+            width: 300px;
             background: #6b7280;
             display: inline-flex;
             flex-wrap: wrap;
             align-items: center;
             padding: 3.5px 16px;
             border-radius: 6px;
+            margin-bottom: 5px;
         }
         .threshold-controls-container input[type="number"] {
             margin-left: 8px;
             margin-right: 10px;
-            width: 30px;
+            width: 25px;
             /* background: #232526;
             color: #fff;
             border: 1px solid #444;
@@ -122,6 +124,21 @@
             padding: 4px 8px;
             font-size: 15px;
             transition: border 0.2s; */
+        }
+        .anomaly-controls-container {
+            width: 300px;
+            background: #6b7280;
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            padding: 3.5px 16px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+        .anomaly-controls-container input[type="number"] {
+            margin-left: 8px;
+            margin-right: 10px;
+            width: 25px;
         }
         #help-tooltip-container {
             position: fixed;
@@ -177,7 +194,7 @@
             <button id="serialButton" class="welcome-btn" style="width: 110px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 5px;">
                 <img src="./image/usb icon.png" style="width: 15px; margin-top: -3px;">Serial
             </button>
-            
+
             <button id="bleButton" class="welcome-btn" style="width: 110px; height: 40px; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <img src="./image/bluetooth icon.png" style="width: 8px; margin-top: -2px;">BLE
             </button>
@@ -204,7 +221,7 @@
     <!-- Serial Plotter Content -->
     <div id="serialContent" style="display: none;">
         <h2>Serial Data Plotter</h2>
-        
+
         <label for="baudRate"><b>Baud Rate :</b></label>
         <select id="baudRate" style="margin-right: 10px;">
             <option value="9600">9600</option>
@@ -213,7 +230,7 @@
             <option value="57600">57600</option>
             <option value="115200" selected>115200</option>
         </select>
-        
+
         <button id="connect" style="width: 110px; margin-top: 5px; margin-bottom: 5px;">Connect</button>
         <button id="stop" style="width: 110px; margin-top: 5px; margin-bottom: 5px;" disabled>Stop</button>
         <button id="clearChart" style="width: 110px; margin-top: 5px; margin-bottom: 5px; margin-right: 10px;">Clear</button>
@@ -227,7 +244,14 @@
             <label for="thresholdInput"><b>Threshold :</b></label>
             <input type="number" id="thresholdInput" value="0">
             <button id="setThresholdBtn" class="export-btn">Set</button>
-            <button id="toggleThresholdBtn" class="export-btn disabled" style="width: 130px; margin-right: 0px;">Enable Alert</button>
+            <button id="toggleThresholdBtn" class="export-btn disabled" style="width: 90px; margin-right: 0px;">Enable</button>
+        </div>
+        <!-- Anomaly controls -->
+        <div class="anomaly-controls-container">
+            <label for="anomalyDeltaInput"><b>AnomalyΔ :</b></label>
+            <input type="number" id="anomalyDeltaInput" value="0">
+            <button id="setAnomalyDeltaBtn" class="export-btn">Set</button>
+            <button id="toggleAnomalyBtn" class="export-btn disabled" style="width: 90px; margin-right: 0px;">Enable</button>
         </div>
         <br><br>
 
@@ -264,9 +288,15 @@
             <label for="bleThresholdInput"><b>Threshold :</b></label>
             <input type="number" id="bleThresholdInput" value="0">
             <button id="setBleThresholdBtn" class="export-btn">Set</button>
-            <button id="toggleBleThresholdBtn" class="export-btn disabled" style="width: 130px; margin-right: 0px;">Enable Alert</button>
+            <button id="toggleBleThresholdBtn" class="export-btn disabled" style="width: 90px; margin-right: 0px;">Enable</button>
         </div>
-        
+        <!-- Anomaly controls -->
+        <div class="anomaly-controls-container">
+            <label for="bleAnomalyDeltaInput"><b>AnomalyΔ :</b></label>
+            <input type="number" id="bleAnomalyDeltaInput" value="0">
+            <button id="setBleAnomalyDeltaBtn" class="export-btn">Set</button>
+            <button id="toggleBleAnomalyBtn" class="export-btn disabled" style="width: 90px; margin-right: 0px;">Enable</button>
+        </div>
         <p id="status">Not connected</p>
 
         <div id="blePlot"></div>
@@ -295,6 +325,7 @@
                 <li>點選 Serial 或 BLE 進入對應模式。</li>
                 <li>連接裝置後，數據會即時顯示。</li>
                 <li>可設定閾值 (Threshold)，當數據超過該值時會有提示。</li>
+                <li>可設定異常變化量 (Anomaly Δ)，啟用後偵測數據突變。</li>
                 <li>可點選 Stop 暫停數據接收，Continue 恢復接收。</li>
                 <li>按下 Clear 清除資料。</li>
                 <li>按下 Export CSV 下載數據。</li>
@@ -305,9 +336,11 @@
 
     <script>
         // ----------- 數據異常偵測功能 -----------
-        let anomalyDelta = 2; // Serial 異常閾值
+        let anomalyDelta = parseFloat(document.getElementById("anomalyDeltaInput")?.value) || 0;
+        let anomalyEnabled = false;
         let lastSerialValue = null;
         function isSerialAnomaly(currentValue) {
+            if (!anomalyEnabled) return false;
             if (lastSerialValue === null) {
                 lastSerialValue = currentValue;
                 return false;
@@ -316,9 +349,11 @@
             lastSerialValue = currentValue;
             return isAnomaly;
         }
-        let bleAnomalyDelta = 2; // BLE 異常閾值
+        let bleAnomalyDelta = parseFloat(document.getElementById("bleAnomalyDeltaInput")?.value) || 0;
+        let bleAnomalyEnabled = false;
         let lastBleValue = null;
         function isBleAnomaly(currentValue) {
+            if (!bleAnomalyEnabled) return false;
             if (lastBleValue === null) {
                 lastBleValue = currentValue;
                 return false;
@@ -327,6 +362,30 @@
             lastBleValue = currentValue;
             return isAnomaly;
         }
+
+        // Serial Anomaly Controls
+        document.getElementById("setAnomalyDeltaBtn").addEventListener("click", function() {
+            let val = parseFloat(document.getElementById("anomalyDeltaInput").value);
+            if (!isNaN(val)) anomalyDelta = val;
+        });
+        document.getElementById("toggleAnomalyBtn").addEventListener("click", function() {
+            anomalyEnabled = !anomalyEnabled;
+            this.textContent = anomalyEnabled ? "Disable" : "Enable";
+            this.classList.toggle("enabled", anomalyEnabled);
+            this.classList.toggle("disabled", !anomalyEnabled);
+        });
+
+        // BLE Anomaly Controls
+        document.getElementById("setBleAnomalyDeltaBtn").addEventListener("click", function() {
+            let val = parseFloat(document.getElementById("bleAnomalyDeltaInput").value);
+            if (!isNaN(val)) bleAnomalyDelta = val;
+        });
+        document.getElementById("toggleBleAnomalyBtn").addEventListener("click", function() {
+            bleAnomalyEnabled = !bleAnomalyEnabled;
+            this.textContent = bleAnomalyEnabled ? "Disable" : "Enable";
+            this.classList.toggle("enabled", bleAnomalyEnabled);
+            this.classList.toggle("disabled", !bleAnomalyEnabled);
+        });
 
         // 教學提示圖示 hover 顯示
         const helpIcon = document.getElementById('help-icon');
@@ -390,7 +449,7 @@
         });
         document.getElementById("toggleThresholdBtn").addEventListener("click", function() {
             thresholdEnabled = !thresholdEnabled;
-            this.textContent = thresholdEnabled ? "Disable Alert" : "Enable Alert";
+            this.textContent = thresholdEnabled ? "Disable" : "Enable";
             this.classList.toggle("enabled", thresholdEnabled);
             this.classList.toggle("disabled", !thresholdEnabled);
             updateThresholdLine();
@@ -424,7 +483,7 @@
         });
         document.getElementById("toggleBleThresholdBtn").addEventListener("click", function() {
             bleThresholdEnabled = !bleThresholdEnabled;
-            this.textContent = bleThresholdEnabled ? "Disable Alert" : "Enable Alert";
+            this.textContent = bleThresholdEnabled ? "Disable" : "Enable";
             this.classList.toggle("enabled", bleThresholdEnabled);
             this.classList.toggle("disabled", !bleThresholdEnabled);
             updateBleThresholdLine();
