@@ -304,6 +304,30 @@
     </div>
 
     <script>
+        // ----------- 數據異常偵測功能 -----------
+        let anomalyDelta = 2; // Serial 異常閾值
+        let lastSerialValue = null;
+        function isSerialAnomaly(currentValue) {
+            if (lastSerialValue === null) {
+                lastSerialValue = currentValue;
+                return false;
+            }
+            let isAnomaly = Math.abs(currentValue - lastSerialValue) > anomalyDelta;
+            lastSerialValue = currentValue;
+            return isAnomaly;
+        }
+        let bleAnomalyDelta = 2; // BLE 異常閾值
+        let lastBleValue = null;
+        function isBleAnomaly(currentValue) {
+            if (lastBleValue === null) {
+                lastBleValue = currentValue;
+                return false;
+            }
+            let isAnomaly = Math.abs(currentValue - lastBleValue) > bleAnomalyDelta;
+            lastBleValue = currentValue;
+            return isAnomaly;
+        }
+
         // 教學提示圖示 hover 顯示
         const helpIcon = document.getElementById('help-icon');
         const helpTooltip = document.getElementById('help-tooltip');
@@ -577,6 +601,19 @@
                     }, 2000);
                 }
             }
+            // 數據異常偵測
+            if (typeof value === "number" && isSerialAnomaly(value)) {
+                if (!document.getElementById("anomalyAlert")) {
+                    const anomalyDiv = document.createElement("div");
+                    anomalyDiv.id = "anomalyAlert";
+                    anomalyDiv.textContent = `🚨 Anomaly detected! Sudden change: ${value}`;
+                    anomalyDiv.style = "color: #fff; background: #f59e42; padding: 10px; margin-top: 10px; border-radius: 4px;";
+                    dataDisplay.parentNode.insertBefore(anomalyDiv, dataDisplay);
+                    setTimeout(() => {
+                        anomalyDiv.remove();
+                    }, 2500);
+                }
+            }
         }
 
         document.getElementById("connect").addEventListener("click", connectSerial);
@@ -753,6 +790,19 @@
                     setTimeout(() => {
                         alertDiv.remove();
                     }, 2000);
+                }
+            }
+            // BLE 數據異常偵測
+            if (typeof value === "number" && isBleAnomaly(value)) {
+                if (!document.getElementById("bleAnomalyAlert")) {
+                    const anomalyDiv = document.createElement("div");
+                    anomalyDiv.id = "bleAnomalyAlert";
+                    anomalyDiv.textContent = `🚨 Anomaly detected! Sudden change: ${value}`;
+                    anomalyDiv.style = "color: #fff; background: #f59e42; padding: 10px; margin-top: 10px; border-radius: 4px;";
+                    bleDataDisplay.parentNode.insertBefore(anomalyDiv, bleDataDisplay);
+                    setTimeout(() => {
+                        anomalyDiv.remove();
+                    }, 2500);
                 }
             }
         }
