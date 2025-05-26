@@ -67,7 +67,8 @@
             border: 1px solid #333;
         }
         #dataDisplay,
-        #bleDataDisplay {
+        #bleDataDisplay,
+        .alert-log {
             margin-top: 20px;
             height: 200px;
             overflow-y: auto;
@@ -75,7 +76,7 @@
             padding: 10px;
             font-family: monospace;
             background-color: #1E1E1E;
-            color: #EEEEEE;
+            /* color: #EEEEEE; */
         }
         .data-header {
             display: flex;
@@ -104,7 +105,7 @@
             color: #fff !important;
         }
         .threshold-controls-container {
-            width: 300px;
+            width: 310px;
             background: #6b7280;
             display: inline-flex;
             flex-wrap: wrap;
@@ -126,7 +127,7 @@
             transition: border 0.2s; */
         }
         .anomaly-controls-container {
-            width: 300px;
+            width: 310px;
             background: #6b7280;
             display: inline-flex;
             flex-wrap: wrap;
@@ -267,7 +268,17 @@
             <span id="maxValue" style="margin-left: 20px;">Max: --</span>
             <span id="avgValue" style="margin-left: 20px;">Avg: --</span>
         </div>
-        <div id="dataDisplay"></div>
+        
+        <!-- Data display and alert log container -->
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <div id="dataDisplay"></div>
+            </div>
+            <div style="flex: 1;">
+                <!-- <h3 style="margin: 0 0 10px 0; color: #EEEEEE;">Alert Log</h3> -->
+                <div id="alertLog" class="alert-log"></div>
+            </div>
+        </div>
 
     </div>
 
@@ -312,7 +323,17 @@
             <span id="bleMaxValue" style="margin-left: 20px;">Max: --</span>
             <span id="bleAvgValue" style="margin-left: 20px;">Avg: --</span>
         </div>
-        <div id="bleDataDisplay"></div>
+        
+        <!-- BLE data display and alert log container -->
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <div id="bleDataDisplay"></div>
+            </div>
+            <div style="flex: 1;">
+                <!-- <h3 style="margin: 0 0 10px 0; color: #EEEEEE;">Alert Log</h3> -->
+                <div id="bleAlertLog" class="alert-log"></div>
+            </div>
+        </div>
         
     </div>
 
@@ -361,6 +382,44 @@
             let isAnomaly = Math.abs(currentValue - lastBleValue) > bleAnomalyDelta;
             lastBleValue = currentValue;
             return isAnomaly;
+        }
+
+        // Alert Log Functions
+        const alertLog = document.getElementById("alertLog");
+        const bleAlertLog = document.getElementById("bleAlertLog");
+        
+        function addAlertToLog(message, type = "threshold") {
+            const currentTime = new Date();
+            const elapsed = startTime ? (currentTime - startTime) / 1000 : 0;
+            const timeStr = elapsed.toFixed(2) + "s";
+            const p = document.createElement("p");
+            p.style.margin = "5px 0";
+            p.style.fontSize = "12px";
+            p.style.color = type === "threshold" ? "#ff6b6b" : "#ffa726";
+            p.textContent = `${timeStr} - ${message}`;
+            alertLog.appendChild(p);
+            alertLog.scrollTop = alertLog.scrollHeight;
+            
+            while (alertLog.childNodes.length > 50) {
+                alertLog.removeChild(alertLog.firstChild);
+            }
+        }
+        
+        function addBleAlertToLog(message, type = "threshold") {
+            const currentTime = new Date();
+            const elapsed = bleStartTime ? (currentTime - bleStartTime) / 1000 : 0;
+            const timeStr = elapsed.toFixed(2) + "s";
+            const p = document.createElement("p");
+            p.style.margin = "5px 0";
+            p.style.fontSize = "12px";
+            p.style.color = type === "threshold" ? "#ff6b6b" : "#ffa726";
+            p.textContent = `${timeStr} - ${message}`;
+            bleAlertLog.appendChild(p);
+            bleAlertLog.scrollTop = bleAlertLog.scrollHeight;
+            
+            while (bleAlertLog.childNodes.length > 50) {
+                bleAlertLog.removeChild(bleAlertLog.firstChild);
+            }
         }
 
         // Serial Anomaly Controls
@@ -649,12 +708,16 @@
                 allSerialData.push({ time: match[1], value: match[2] });
             }
             if (thresholdEnabled && typeof value === "number" && value > threshold) {
+                addAlertToLog(`Threshold exceeded: ${value.toFixed(2)} > ${threshold}`, "threshold");
                 if (!document.getElementById("thresholdAlert")) {
                     const alertDiv = document.createElement("div");
                     alertDiv.id = "thresholdAlert";
                     alertDiv.textContent = `⚠️ Value exceeded threshold (${threshold})!`;
-                    alertDiv.style = "color: #fff; background: #d32f2f; padding: 10px; margin-top: 10px; border-radius: 4px;";
-                    dataDisplay.parentNode.insertBefore(alertDiv, dataDisplay);
+                    alertDiv.style = "color: #fff; background: #d32f2f; padding: 10px; margin: 10px 0; border-radius: 4px; width: 100%; box-sizing: border-box; position: relative;";
+                    const dataHeaderSerial = document.querySelector('#serialContent .data-header');
+                    if (dataHeaderSerial && dataHeaderSerial.parentNode) {
+                        dataHeaderSerial.parentNode.insertBefore(alertDiv, dataHeaderSerial);
+                    }
                     setTimeout(() => {
                         alertDiv.remove();
                     }, 2000);
@@ -662,12 +725,16 @@
             }
             // 數據異常偵測
             if (typeof value === "number" && isSerialAnomaly(value)) {
+                addAlertToLog(`Anomaly detected: sudden change to ${value.toFixed(2)}`, "anomaly");
                 if (!document.getElementById("anomalyAlert")) {
                     const anomalyDiv = document.createElement("div");
                     anomalyDiv.id = "anomalyAlert";
                     anomalyDiv.textContent = `🚨 Anomaly detected! Sudden change: ${value}`;
-                    anomalyDiv.style = "color: #fff; background: #f59e42; padding: 10px; margin-top: 10px; border-radius: 4px;";
-                    dataDisplay.parentNode.insertBefore(anomalyDiv, dataDisplay);
+                    anomalyDiv.style = "color: #fff; background: #f59e42; padding: 10px; margin: 10px 0; border-radius: 4px; width: 100%; box-sizing: border-box; position: relative;";
+                    const dataHeaderSerial = document.querySelector('#serialContent .data-header');
+                    if (dataHeaderSerial && dataHeaderSerial.parentNode) {
+                        dataHeaderSerial.parentNode.insertBefore(anomalyDiv, dataHeaderSerial);
+                    }
                     setTimeout(() => {
                         anomalyDiv.remove();
                     }, 2500);
@@ -720,6 +787,7 @@
             document.getElementById("maxValue").textContent = "Max: --";
             document.getElementById("avgValue").textContent = "Avg: --";
             dataDisplay.innerHTML = "";
+            alertLog.innerHTML = "";
         });
 
         /* ---------------- BLE Plotter Code ---------------- */
@@ -840,12 +908,16 @@
             }, [0], maxDataPoints);
             bleAllData.push({ time: elapsedNum.toFixed(2), value: value.toFixed(1) });
             if (bleThresholdEnabled && typeof value === "number" && value > bleThreshold) {
+                addBleAlertToLog(`Threshold exceeded: ${value.toFixed(2)} > ${bleThreshold}`, "threshold");
                 if (!document.getElementById("bleThresholdAlert")) {
                     const alertDiv = document.createElement("div");
                     alertDiv.id = "bleThresholdAlert";
                     alertDiv.textContent = `⚠️ Value exceeded threshold (${bleThreshold})!`;
-                    alertDiv.style = "color: #fff; background: #d32f2f; padding: 10px; margin-top: 10px; border-radius: 4px;";
-                    bleDataDisplay.parentNode.insertBefore(alertDiv, bleDataDisplay);
+                    alertDiv.style = "color: #fff; background: #d32f2f; padding: 10px; margin: 10px 0; border-radius: 4px; width: 100%; box-sizing: border-box; position: relative;";
+                    const dataHeaderBle = document.querySelector('#bleContent .data-header');
+                    if (dataHeaderBle && dataHeaderBle.parentNode) {
+                        dataHeaderBle.parentNode.insertBefore(alertDiv, dataHeaderBle);
+                    }
                     setTimeout(() => {
                         alertDiv.remove();
                     }, 2000);
@@ -853,12 +925,16 @@
             }
             // BLE 數據異常偵測
             if (typeof value === "number" && isBleAnomaly(value)) {
+                addBleAlertToLog(`Anomaly detected: sudden change to ${value.toFixed(2)}`, "anomaly");
                 if (!document.getElementById("bleAnomalyAlert")) {
                     const anomalyDiv = document.createElement("div");
                     anomalyDiv.id = "bleAnomalyAlert";
                     anomalyDiv.textContent = `🚨 Anomaly detected! Sudden change: ${value}`;
-                    anomalyDiv.style = "color: #fff; background: #f59e42; padding: 10px; margin-top: 10px; border-radius: 4px;";
-                    bleDataDisplay.parentNode.insertBefore(anomalyDiv, bleDataDisplay);
+                    anomalyDiv.style = "color: #fff; background: #f59e42; padding: 10px; margin: 10px 0; border-radius: 4px; width: 100%; box-sizing: border-box; position: relative;";
+                    const dataHeaderBle = document.querySelector('#bleContent .data-header');
+                    if (dataHeaderBle && dataHeaderBle.parentNode) {
+                        dataHeaderBle.parentNode.insertBefore(anomalyDiv, dataHeaderBle);
+                    }
                     setTimeout(() => {
                         anomalyDiv.remove();
                     }, 2500);
@@ -924,6 +1000,7 @@
             document.getElementById("bleMaxValue").textContent = "Max: --";
             document.getElementById("bleAvgValue").textContent = "Avg: --";
             bleDataDisplay.innerHTML = "";
+            bleAlertLog.innerHTML = "";
         });
     </script>
 </body>
