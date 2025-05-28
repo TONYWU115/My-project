@@ -1,10 +1,11 @@
-## 網頁程式設計期末專題
+## 網頁程式設計專題──[Web Data Plotter](https://tonywu115.github.io/web-design-project/)
 ---
-### [Web Data Plotter](https://tonywu115.github.io/web-design-project/)
+### 
+#### [期末Demo簡報](https://www.canva.com/design/DAGmxfrgJHc/8DgXr4utndiLmbT4b5i02w/edit)
 
 * 單晶片數據傳送方式
     * Serial
-    * BLE4.0 (BT-05)
+    * BLE4.0
 
 ### 功能
 * 讀取數據
