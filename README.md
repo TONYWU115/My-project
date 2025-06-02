@@ -1,20 +1,21 @@
-## 網頁程式設計專題──[Web Data Plotter](https://tonywu115.github.io/web-design-project/)
----
+## 網頁程式設計專題──Web Data Plotter
+
 ### 
-#### [期末Demo簡報](https://www.canva.com/design/DAGmxfrgJHc/8DgXr4utndiLmbT4b5i02w/edit)
+* ##### [期末Demo簡報](https://www.canva.com/design/DAGmxfrgJHc/x9D9v0q6Aoam7t9tDin14w/view?utm_content=DAGmxfrgJHc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h8a94bbe6b0)
+* ##### [網頁連結](https://tonywu115.github.io/web-design-project/)
 
-* 單晶片數據傳送方式
-    * Serial
-    * BLE4.0
-
-### 功能
-* 讀取數據
+### 網頁功能
+* 讀取串口、藍芽數據
 * 即時顯示數據
 * 繪製成波型
 * 顯示數據最大最小值、平均值
 * 設定警示值
 * 偵測數據突變
 * 將數據輸出成CSV檔
+
+### 接收數據方式
+* Serial
+* BLE 4.0
 
 ### 注意事項
 - 若使用`serial plotter`，則需使用支援 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API) 的瀏覽器
@@ -30,23 +31,25 @@
 ### 流程圖如下
 ```mermaid
 flowchart LR
-    A(單晶片發送數據) -->B(serial port接收)
-    B --> C(Web serial API)
-    C --> D(plotly.js)
-    D --> E(Data plot)
-
-    A --> F(BLE 接收)
-    F --> G(Web Bluetooth API)
-    G --> D
-
+A[使用者進入網站] --> B{選擇通訊模式}
+B -->|Serial| C[使用 Web Serial API 連線]
+B -->|BLE| D[使用 Web Bluetooth API 連線]
+C --> E[資料即時顯示 + Plotly 畫圖]
+D --> E
+E --> F{設定閾值 / 異常偵測}
+F --> G[觸發警示 / 記錄 Log]
+E --> H[匯出資料為 CSV]
 ```
 ---
-### Demo
+## Demo
 * serial data plotter
-<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/image/serial.png">
+<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/gif/serial.gif">
 
 * BLE data plotter
-<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/image/BLE.png">
+<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/gif/BLE.gif">
+
+* Alert
+<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/gif/BLE.gif">
 
 ---
 ```
