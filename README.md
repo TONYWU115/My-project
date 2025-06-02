@@ -1,8 +1,8 @@
 ## 網頁程式設計專題──Web Data Plotter
 
 ### 
-* ##### [期末Demo簡報](https://www.canva.com/design/DAGmxfrgJHc/x9D9v0q6Aoam7t9tDin14w/view?utm_content=DAGmxfrgJHc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h8a94bbe6b0)
-* ##### [網頁連結](https://tonywu115.github.io/web-design-project/)
+* #### [期末Demo簡報](https://www.canva.com/design/DAGmxfrgJHc/x9D9v0q6Aoam7t9tDin14w/view?utm_content=DAGmxfrgJHc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h8a94bbe6b0)
+* #### [網頁連結](https://tonywu115.github.io/web-design-project/)
 
 ### 網頁功能
 * 讀取串口、藍芽數據
@@ -49,7 +49,7 @@ E --> H[匯出資料為 CSV]
 <img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/gif/BLE.gif">
 
 * Alert
-<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/gif/BLE.gif">
+<img src="https://raw.githubusercontent.com/TONYWU115/web-design-project/refs/heads/main/gif/alert.gif">
 
 ---
 ```
